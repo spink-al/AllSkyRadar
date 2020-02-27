@@ -24,3 +24,7 @@ sudo pip3 install ephem
 sudo pip3 install zwoasi
 
 sudo pip3 install scipy
+
+sudo apt install tmux
+
+sudo apt install screen

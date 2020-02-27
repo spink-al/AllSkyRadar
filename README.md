@@ -13,6 +13,8 @@ sudo pip3 install opencv-python==3.4.6.27
 
 sudo pip3 install opencv-contrib-python==3.4.6.27
 
+sudo apt install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
+
 sudo pip3 install matplotlib
 
 sudo pip3 install Pillow

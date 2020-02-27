@@ -90,7 +90,7 @@ datafileA8.close()
 
 maska_str = str(datazA8[0])
 print("/home/pi/zwo-skycam/"+maska_str)
-maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+str(maska_str)) # niezle na niebieskie niebo
+maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str))
 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)
 op = float(datazA7[0])
 
@@ -1303,7 +1303,7 @@ class AsyncWrite(threading.Thread):
             if not str(maska_str) == str(datazA8[0]):
                 print("/home/pi/zwo-skycam/"+maska_str+" -> /home/pi/zwo-skycam/"+str(datazA8[0]))
                 maska_str = str(datazA8[0])
-                maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+maska_str) # niezle na niebieskie niebo
+                maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str))
                 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)        
             ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol0) / 255) * (255 - ocvi)) + (1 - op) * ocvi
             cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])

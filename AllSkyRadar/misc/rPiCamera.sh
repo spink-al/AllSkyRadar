@@ -17,6 +17,8 @@ if ! [ -f ${TMP_FLDR}/tmpconfA3 ] ; then cp ${CONF_FLDR}/tmpconfA3 ${TMP_FLDR} ;
 if ! [ -f ${TMP_FLDR}/tmpconfA4 ] ; then cp ${CONF_FLDR}/tmpconfA4 ${TMP_FLDR} ; fi
 if ! [ -f ${TMP_FLDR}/tmpconfA5 ] ; then cp ${CONF_FLDR}/tmpconfA5 ${TMP_FLDR} ; fi
 if ! [ -f ${TMP_FLDR}/tmpconfA6 ] ; then cp ${CONF_FLDR}/tmpconfA6 ${TMP_FLDR} ; fi
+if ! [ -f ${TMP_FLDR}/tmpconfA7 ] ; then cp ${CONF_FLDR}/tmpconfA7 ${TMP_FLDR} ; fi
+if ! [ -f ${TMP_FLDR}/tmpconfA8 ] ; then cp ${CONF_FLDR}/tmpconfA8 ${TMP_FLDR} ; fi
 
 while true ; do 
     echo "START: "`date` 

@@ -4,7 +4,7 @@
 
 cd ${BIN_FLDR}
 
-tmux new-session -s AllSkyRadar \; \
+tmux -L myapp -f /home/pi/AllSkyRadar/other/.tmux.conf new-session -s AllSkyRadar \; \
 split-window -v -p 70 \; \
 select-pane -t 0 \; \
 split-window -h -p 50 \; \

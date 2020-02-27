@@ -1,0 +1,18 @@
+# Read config 
+. /home/pi/AllSkyRadar/ASR_Conf.py
+
+termcapinfo xterm* ti@:te@
+bind l focus right
+bind h focus left
+bind k focus up
+bind j focus down
+
+bind = resize =
+bind + resize +1
+bind - resize -1
+bind _ resize max
+
+layout new flight_warning
+layout autosave on
+vbell off
+screen -t "FW" bash -c '/home/pi/AllSkyRadar/misc/flight_warning.sh'

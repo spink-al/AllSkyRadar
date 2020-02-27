@@ -19,7 +19,7 @@ if ! [ -f ${TMP_FLDR}/tmpconf8  ] ; then cp ${CONF_FLDR}/tmpconf8 ${TMP_FLDR} ; 
 
 sleep 1s
 while true ; do
-    if [ -f ${TMP_FLDR}/WSC/exit ] ; then
+    if [ -f ${TMP_FLDR}ASI/exit ] ; then
         rm ${TMP_FLDR}/ASI/exit
         exit
     fi

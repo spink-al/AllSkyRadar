@@ -17,8 +17,8 @@ while true ; do
     /usr/bin/ssh pi@${STORAGE_IP} 'mkdir -p /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}
     /usr/bin/ssh pi@${STORAGE_IP} 'ln -sfn /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}' /home/pi/work/arch/AS/_ASI/_'${ASI}
     while true  ; do
-        if [ -f /tmp/_allsky/restart3 ] ; then 
-	    rm /tmp/_allsky/restart3
+        if [ -f ${TMP_FLDR}/restart3 ] ; then 
+	    rm /${TMP_FLDR}/restart3
 	    /usr/bin/ssh pi@${STORAGE_IP} 'touch /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}'/exit'
 	    break 
 	fi 

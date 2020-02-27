@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#SS=`tail -1 /home/pi/camera/historia | awk '{ print $3 }'`
-#ISO=`tail -1 /home/pi/camera/historia | awk '{ print $4 }'`
-#echo "/home/pi/camera/_fullres_start_new.sh _f_nite.sh $SS $ISO" | at 00:05
-
-
-#asiCam
 cp /tmp/tmpconf* /home/pi/AllSkyRadar/config/
 
 sleep 1s
@@ -15,28 +9,22 @@ echo 'echo "40" > /tmp/AllSkyRadar/tmpconf2'    | at $(date --date="+`/usr/local
 echo 'echo "40" > /tmp/AllSkyRadar/tmpconf3'    | at $(date --date="+`/usr/local/bin/sunwait -v sun up +20` min" +%H:%M)
 echo 'echo "70" > /tmp/AllSkyRadar/tmpconf2'    | at $(date --date="+`/usr/local/bin/sunwait -v sun up +20` min" +%H:%M)
 
-#
-echo 'echo "50" > /tmp/AllSkyRadar/tmpconf3'    | at $(date --date="+`/usr/local/bin/sunwait -v sun down -20` min" +%H:%M)
-echo 'echo "75" > /tmp/AllSkyRadar/tmpconf2'    | at $(date --date="+`/usr/local/bin/sunwait -v sun down -20` min" +%H:%M)
-#
 
-echo 'echo "70" > /tmp/AllSkyRadar/tmpconf3'    | at $(date --date="+`/usr/local/bin/sunwait -v civ down` min" +%H:%M)
+echo 'echo "50" > /tmp/AllSkyRadar/tmpconf3'    | at $(date --date="+`/usr/local/bin/sunwait -v sun down -20` min" +%H:%M)
 echo 'echo "110" > /tmp/AllSkyRadar/tmpconf2'   | at $(date --date="+`/usr/local/bin/sunwait -v civ down` min" +%H:%M)
 
 echo 'echo "90" > /tmp/AllSkyRadar/tmpconf3'    | at $(date --date="+`/usr/local/bin/sunwait -v naut down -20` min" +%H:%M)
 echo 'echo "110" > /tmp/AllSkyRadar/tmpconf2'   | at $(date --date="+`/usr/local/bin/sunwait -v naut down -20` min" +%H:%M)
 
-#rPiCam
+
 echo 'echo "5" > /tmp/AllSkyRadar/tmpconf3A'    | at $(date --date="+`/usr/local/bin/sunwait -v naut up` min" +%H:%M)
 echo 'echo "70" > /tmp/AllSkyRadar/tmpconf2A'   | at $(date --date="+`/usr/local/bin/sunwait -v naut up` min" +%H:%M)
 
 echo 'echo "90" > /tmp/AllSkyRadar/tmpconf3A'   | at $(date --date="+`/usr/local/bin/sunwait -v sun up +20` min" +%H:%M)
 echo 'echo "130" > /tmp/AllSkyRadar/tmpconf2A'  | at $(date --date="+`/usr/local/bin/sunwait -v sun up +20` min" +%H:%M)
 
-#
 echo 'echo "75" > /tmp/AllSkyRadar/tmpconf3A'   | at $(date --date="+`/usr/local/bin/sunwait -v sun down -20` min" +%H:%M)
 echo 'echo "105" > /tmp/AllSkyRadar/tmpconf2A'  | at $(date --date="+`/usr/local/bin/sunwait -v sun down -20` min" +%H:%M)
-#
 
 echo 'echo "65" > /tmp/AllSkyRadar/tmpconf3A'   | at $(date --date="+`/usr/local/bin/sunwait -v civ down` min" +%H:%M)
 echo 'echo "180" > /tmp/AllSkyRadar/tmpconf2A'  | at $(date --date="+`/usr/local/bin/sunwait -v civ down` min" +%H:%M)

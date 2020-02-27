@@ -207,8 +207,8 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f, licznik_1, t
     ax = plt.add_subplot(111, projection='polar')
     ax.patch.set_alpha(0)
     
-    if os.path.isfile('/tmp/tst2.txt'):
-        DataFileName='/tmp/tst2.txt'
+    if os.path.isfile('/tmp/out.txt'):
+        DataFileName='/tmp/out.txt'
         datafile=open(DataFileName, 'r')
         dataz=datafile.readlines()
         datafile.close()

@@ -4,5 +4,5 @@
 
 echo 1 > ${TMP_FLDR}/tmpconf9
 echo 1 > ${TMP_FLDR}/tmpconf9X
-touch ${TMP_FLDR}/WSC/exit
+
 

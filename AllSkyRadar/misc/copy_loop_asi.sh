@@ -7,7 +7,7 @@ while true ; do
     cd ${BIN_FLDR}
     #data="20200210"
     data=`date +%Y%m%d`
-    ASI=WSC
+    ASI=ASI
     mkdir -p ${TMP_FLDR}/WSC
     mkdir -p ${TMP_FLDR}/WSC.tmp
 
@@ -17,8 +17,8 @@ while true ; do
     /usr/bin/ssh pi@${STORAGE_IP} 'mkdir -p /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}
     /usr/bin/ssh pi@${STORAGE_IP} 'ln -sfn /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}' /home/pi/work/arch/AS/_ASI/_'${ASI}
     while true  ; do
-        if [ -f /tmp/AllSkyRadar/restart3 ] ; then 
-	    rm /tmp/AllSkyRadar/restart3
+        if [ -f /tmp/AllSkyRadar/restart1 ] ; then 
+	    rm /tmp/AllSkyRadar/restart1
 	    /usr/bin/ssh pi@${STORAGE_IP} 'touch /home/pi/work/arch/AS/_ASI/'${ASI}'/'${data}'/exit'
 	    break 
 	fi 

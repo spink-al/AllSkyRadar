@@ -10,13 +10,36 @@ import io
 #import picamera.array
 import threading
 from PIL import Image, ImageStat, ImageFont, ImageDraw,ImageColor
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
+import math
+import ephem
+import os
 import ASR_Conf
+
 
 tmpfld = ASR_Conf.TMP_FLDR
 miscfld = ASR_Conf.MISC_FLDR
+tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
 
 print("START 0: "+str(datetime.datetime.now()))
 
+gatech = ephem.Observer()
+gatech.lat = '52.4451'
+gatech.lon = '16.9535'
+gatech.elevation = 90
+
+issline=[]
+
+tlefile=open(tleFileName, 'r')
+tledata=tlefile.readlines()
+tlefile.close()
+
+for i, line in enumerate(tledata):
+    if "ISS" in line: 
+        for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
+
+#print(tledata)
 deg = u'\xb0'
 uus = u'\xb5s'
 jups = u"\u2643"
@@ -48,11 +71,231 @@ DataFileNameA4 = tmpfld+"/tmpconfA4"
 DataFileNameA5 = tmpfld+"/tmpconfA5"
 # Lens shading options for tests *maskaAntyFiol is a working solution atm
 DataFileNameA6 = tmpfld+"/tmpconfA6"
+# anti lens shading mask
+DataFileNameA7 = "/tmp/tmpconfA7"
+DataFileNameA8 = "/tmp/tmpconfA8"
 
-maskaAntyFiol = cv2.imread(miscfld+"/_maska_20200225c720.png") # niezle na niebieskie niebo
-#maskaAntyFiol = cv2.imread(miscfld+"/_maska_20200225d720.png")
-maskaAntyFiol = maskaAntyFiol.astype(np.single)
-op = 1.0
+center_lim = 0
+lewy_lim = 0
+prawy_lim = 0
+in_center = 0
+
+datafileA7=open(DataFileNameA7, 'r')
+datazA7=datafileA7.readlines()
+datafileA7.close()
+
+datafileA8=open(DataFileNameA8, 'r')
+datazA8=datafileA8.readlines()
+datafileA8.close()
+
+maska_str = str(datazA8[0])
+print("/home/pi/zwo-skycam/"+maska_str)
+maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+str(maska_str)) # niezle na niebieskie niebo
+maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)
+op = float(datazA7[0])
+
+def is_float_try(str):
+    try:
+        float(str)
+        return True
+    except ValueError:
+        return False
+
+def is_int_try(str):
+    try:
+        int(str)
+        return True
+    except ValueError:
+        return False
+
+def rotate_around_point_highperf(x,y, radians, origin=(0, 0)):
+    global in_center
+    global prawy_lim
+    global lewy_lim
+
+    #x, y = x,y
+    offset_x, offset_y = origin
+    adjusted_x = (x - offset_x)
+    adjusted_y = (y - offset_y)
+    cos_rad = math.cos(radians)
+    sin_rad = math.sin(radians)
+    qx = offset_x + cos_rad * adjusted_x + sin_rad * adjusted_y
+    qy = offset_y + -sin_rad * adjusted_x + cos_rad * adjusted_y
+
+    return qx, qy
+
+def distorsXY1(x,y):
+    """
+    xdoa1 = []
+    ydob1 = []
+    ###########################################################
+    if((x < float(in_center)-30) or (x > float(in_center)+30)) or y > 30:        
+        # if y > 20:        
+        x1,y1 = distorsXY2(x,y)
+        y1 = y1
+        x1 = x1 #round((k),1),round((j),1)
+    else:
+        if (inner_lock == 0):
+            x1,y1 = distorsXY2(x,y)
+            y1 = y1
+            x1 = x        
+        else:
+            x1,y1 = distorsXY2(x,y)
+            y1 = y1
+            x1 = x1
+
+    ###########################################################
+    if (x1 > 0):
+        # x1,y1 = f0a(x1, y1,midX)
+        if upit == 1:
+            x1,y1 = f0a(x1, y1)
+        else:
+            x1,y1 = x1, y1
+    elif (x1 < -0):
+        # xa,ya = f0a(x1, y1,midX)
+        if upit == 1:
+            x1,y1 = f0a(x1, y1)
+        else:
+            x1,y1 = x1, y1
+    else:
+        x1,y1 = x1, y1
+    ###########################################################
+    xdoa1.append(x)
+    xdoa1.append(x1)
+    # xdoa1.append(srcX)
+    ydob1.append(y)
+    ydob1.append(y1)	
+    ax.plot(xdoa1,ydob1, '--',markersize=10, color='yellow', lw=1,alpha=.2)
+    """
+    x1,y1 = distorsXY2(x,y)
+    return x1,y1	
+
+def distorsXY1a(x,y):
+    global in_center
+    global prawy_lim
+    global lewy_lim
+    """
+    xdoa1 = []
+    ydob1 = []
+    ###########################################################
+    if((x < float(in_center)-30) or (x > float(in_center)+30)) or y > 30:        
+        # if y > 20:        
+        x1,y1 = distorsXY2(x,y)
+        y1 = y1
+        x1 = x1 #round((k),1),round((j),1)
+    else:
+        if (inner_lock == 0):
+            x1,y1 = distorsXY2(x,y)
+            y1 = y1# +0.0001
+            x1 = x        
+        else:
+            x1,y1 = distorsXY2(x,y)
+            y1 = y1
+            x1 = x1
+
+    ###########################################################
+    if (x1 > 0):
+        # x1,y1 = f0a(x1, y1,midX)
+        if upit == 1:
+            x1,y1 = f0a(x1, y1)
+            # print "A: ",x1, y1
+        else:
+            x1,y1 = x1, y1
+    elif (x1 < -0):
+        # xa,ya = f0a(x1, y1,midX)
+        if upit == 1:
+            x1,y1 = f0a(x1, y1)
+            # print "B: ",x1, y1
+        else:
+            x1,y1 = x1, y1
+    else:
+        x1,y1 = x1, y1
+        # print "C: ",x1, y1        	
+    ###########################################################
+    xdoa1.append(x)
+    xdoa1.append(x1)
+    # xdoa1.append(srcX)
+    ydob1.append(y)
+    ydob1.append(y1)	
+    ax.plot(xdoa1,ydob1, '-',markersize=10, color='red', lw=1,alpha=0.3)
+    """
+    x1,y1 = distorsXY2(x,y)
+    return x1,y1
+
+
+def distorsXY2(x,y):
+    global in_center
+    global prawy_lim
+    global lewy_lim
+    initX 	=	lewy_lim
+    initY 	= 	20 
+    finalX 	= 	prawy_lim
+    finalY 	= 	0 
+
+    midX 	= 	float(finalX - initX) /2
+    midY 	= 	float(finalY - initY) /2
+    midX 	= 	midX + initX
+    midY 	= 	midY + initY
+    midY 	= 	0 ## !!!
+
+    k3 		= 	-0.000015
+    Sy 		= 	-0.08
+    Sx 		= 	0.03
+    #pD1 	= 	1.
+    #pD2 	= 	10
+    W1 		= 	0.00004
+    W2  	=	-0.0001
+
+    if (45 < int(in_center) <= 90):
+        T1              =       -1.25
+        V1              =       0.0006
+    elif (90 < int(in_center) <= 135):
+        T1              =       -1.0
+        V1              =       0.0007
+    elif (135 < int(in_center) <= 160):
+        T1              =       0.25
+        V1              =       0.0006
+    elif (160 < int(in_center) <= 200):
+        T1              =       -0.0 # 1.5 # 20190206
+        V1              =       0.0006
+    elif (200 < int(in_center) <= 225):
+        T1              =       0.25 ## z 1.5 20190206
+        V1              =       0.0006
+    elif (225 < int(in_center) <= 270):
+        T1              =       0.5
+        V1              =       0.0006
+    elif (270 < int(in_center) <= 315):
+        T1              =       -0.5
+        V1              =       0.0008
+    elif (315 < int(in_center) <= 360):
+        T1              =       -1.0
+        V1              =       0.0006
+    elif (0 <= int(in_center) <= 45):
+        T1              =       -0.0
+        V1              =       0.0008
+    else:
+        T1              =       0.0
+        V1              =       0.0009
+    #V1 = 0.0008 ########## <<<<<<<<<<<-------------- V1 V1 V1
+    
+            
+    nX = x - midX
+    nY = y - midY
+    
+    Y_2 = nY**2
+    X_2 = nX**2
+    
+        
+    rSrcY =  k3*nY*((X_2) + (Y_2)) + Sy*nY + ((X_2)*(V1)) + ((X_2)*(W1/(1/(nY+0.0001))))
+    rSrcX =  k3*nX*((X_2) + (Y_2)) + Sx*nX +		    ((Y_2)*(W2/(1/(nX+0.0001))))
+
+    srcY = (midY + (rSrcY + nY)) 
+    srcX = (midX + (rSrcX + nX)) 
+    radians_r = math.radians(T1)#75)
+    srcX, srcY = rotate_around_point_highperf(srcX, srcY, radians_r, origin=(midX, midY))
+
+    return srcX, srcY
+
 
 def read_status():
     datafile0=open(DataFileName9, 'r')
@@ -310,6 +553,7 @@ def cap_d():
                 break
 
 
+
 class AsyncWrite(threading.Thread):
     def __init__(self, data, aktual_t_f, exposure, iso, a4, a5, mono):
         threading.Thread.__init__(self)
@@ -324,6 +568,9 @@ class AsyncWrite(threading.Thread):
     def run(self):
         global mniej 
         global wiecej
+        global maska_str
+        global maskaAntyFiol0
+        global op
 
         datafile2=open(DataFileName2, 'r')
         dataz2=datafile2.readlines()
@@ -386,24 +633,690 @@ class AsyncWrite(threading.Thread):
 
         # resize for on-the-fly mp4 
         imgHD = imim.resize((1280, 720), Image.LANCZOS)
+
+
+        ###############################################################################################################
+        if os.path.isfile('/tmp/out.txt'):
+            DataFileName='/tmp/out.txt'
+            datafile=open(DataFileName, 'r')
+            dataz=datafile.readlines()
+            datafile.close()
+        else:
+            dataz=''
+
+        if not dataz:
+            last_time_fw = 'N/A'
+
+        overlay = "1"
+        spines_ovrl="1"
+        stars_ovrl="0"
+        if (overlay == "1"):
+            global center_lim
+            global prawy_lim
+            global lewy_lim
+            alfa_trail=0.25
+            in_center = 260
+            center_lim=float(in_center)
+        
+            #print center_lim
+
+
+            top_lim=25 ##35 ##40 ##45
+            bott_lim= -10 ##-5 ##0 ##5
+
+            lewy_lim=61
+            prawy_lim=61
+            #lewy_lim=konw_a(center_lim)-lewy_lim+23
+            #prawy_lim=konw_a(center_lim)+prawy_lim-23
+            #axll=lewy_lim-24
+            #axrl=prawy_lim+21
+            #print in_center,dirname,filename
+            #
+            def konw_a(azimuth):
+                global center_lim
+                #lon=335;
+                lewy_lim=55
+                prawy_lim=55
+
+                if (center_lim+prawy_lim) < 360 and (center_lim-lewy_lim) > 0:
+                    konw_azi=azimuth
+                else:
+                    konw_azi=np.mod(azimuth - 180.0, 360.0) - 180.0
+                return konw_azi
+
+            lewy_lim=konw_a(center_lim)-lewy_lim
+            prawy_lim=konw_a(center_lim)+prawy_lim
+            axll=lewy_lim#+2
+            axrl=prawy_lim
+
+            #plt.ioff()
+            ##########################################################################
+            #### ax = matplotlib.pyplot.figure(figsize=(12.0, 3.95))
+            #### ax = matplotlib.pyplot.figure(figsize=(19.20, 10.40))
+            #### add to .config/matplotlib/matplotlibrc line backend : Agg !!! ###
+            ##########################################################################
+            #ax = plt(figsize=(19.20, 10.40))
+            
+            plt = Figure(figsize=(12.80, 7.20))
+            plt.patch.set_alpha(0)
+            canvas = FigureCanvasAgg(plt)
+            ax = plt.add_subplot(111)#, facecolor='#ff0000')  # create figure & 1 axis
+            ax.patch.set_alpha(0)
+
+
+
+            if (45 < int(in_center) <= 90):
+                axtl=-1.5 ##-3
+                axbl=52.25 ##58
+            elif (90 < int(in_center) <= 135):
+                axtl=-2.5 ##-3
+                axbl=52.25 ##58
+            elif (135 < int(in_center) <= 160):
+                axtl=-2.75 ##-3
+                axbl=54.0 ##
+            elif (160 < int(in_center) <= 200):
+                axtl=-1.75 ##-3
+                axbl=52.50 ##58
+            elif (200 < int(in_center) <= 225):
+                axtl=-2.75 ##-3
+                axbl=54.0 ##58
+            elif (245 < int(in_center) <= 270):
+                axtl= -1.0 # -3.5 ##-3
+                axbl= 53.5 # 54.25 ##58
+            elif (270 < int(in_center) <= 315):
+                axtl=-0.5 ##-3
+                axbl=53.25 ##58
+            elif (315 < int(in_center) <= 360):
+                axtl=-2.0 ##-3
+                axbl=54.75 ##58
+            elif (0 <= int(in_center) <= 45):
+                axtl=-1.5 ##-3
+                axbl=53.25 ##58
+            else:
+                axtl=-3.5 ##-3
+                axbl=54.25 ##58
+
+            ax.set_xlim(axll,axrl)
+            ax.set_ylim(axtl,axbl)
+            
+
+
+            #lewy_lim=konw_a(center_lim)-lewy_lim+23
+            #prawy_lim=konw_a(center_lim)+prawy_lim-23
+            #ax.set_xlim(lewy_lim-24,prawy_lim+24)        
+            #ax.set_ylim(-3,58)
+
+            
+            fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }        
+            vert_alX=str('top') ; hori_alX=str('center')    
+            for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
+                x1,y1 = distorsXY1a(x,0)
+                ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
+                ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
+        
+            #dół-góra limity
+            #ax.set_ylim(0,55)        
+            #ax.set_xticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
+            #ax.set_yticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
+            
+            #te dzialajo
+            #plt.tick_params(axis='y', which='major', labelsize=8, labelcolor='none',color='none')#,direction='in')
+            
+            
+            if (spines_ovrl == "1"):
+                    ax.spines['bottom'].set_color('darkred')
+                    ax.spines['top'].set_color('darkred') 
+                    ax.spines['right'].set_color('darkred')
+                    ax.spines['left'].set_color('darkred')
+                    ax.tick_params(axis='y', which='major', labelsize=8, labelcolor='white',color='none')#,direction='in')
+                    ax.tick_params(axis='x', which='major', labelsize=8, labelcolor='white',color='none')#,direction='in')
+
+            elif (spines_ovrl == "0"):
+                    ax.spines['bottom'].set_visible(False)
+                    ax.spines['top'].set_visible(False) 
+                    ax.spines['right'].set_visible(False)
+                    ax.spines['left'].set_visible(False)
+                    ax.tick_params(axis='y', which='major', labelsize=8, labelcolor='none',color='none')#,direction='in')
+                    ax.tick_params(axis='x', which='major', labelsize=8, labelcolor='none',color='none')#,direction='in')
+            #plt.tick_params(axis='y', which='major', labelsize=8, labelcolor='#ffffff',direction='in')
+            #plt.tick_params(axis='x', which='major', labelsize=8, labelcolor='#ffffff',direction='in')
+            #plt.setp(ax.get_xticklabels(), rotation='vertical', fontsize=14)
+            #plt.setp(ax.get_xticklabels(), fontsize=14)
+        
+            #ax.tick_params(axis='y', labelcolor='#ff0000')
+            #ax.set_yticklabels('y')
+            #ax.set_yticklabels(ax.get_yticks()[::-1])
+            #ax.spines['polar'].set_visible(False) #wyłącza zewn krawedz
+            
+            #ax.set_yticklabels([])
+            #ax.grid(True)
+            ax.grid(False)
+            fontX = {'color':  "white", 'size': 10, 'weight': 'normal', 'family': 'monospace', }
+            vert_alX=str('top') ; hori_alX=str('left')
+            
+            
+            #######
+            if (stars_ovrl == "1"):
+                #lista_s=['Alpheratz','Algenib','Scheat','Sadalmelik','Markab','Enif','Arneb','Elnath','Mirzam','Saiph','Bellatrix','Alhena','Polaris','Phecda','Dubhe','Castor','Pollux','Mizar','Betelgeuse','Altair','Vega','Rigel','Diphda','Sirius','Arcturus','Capella','Hamal','Alcyone','Aldebaran','Alphecca','Menkalinan','Menkar','Procyon','Deneb','Sadr','Regulus']
+                lista_s=['Acamar', 'Achernar', 'Acrux', 'Adara', 'Adhara', 'Agena', 'Albereo', 'Alcaid', 'Alcor', 'Alcyone', 'Aldebaran', 'Alderamin', 'Alfirk', 'Algenib', 'Algieba', 'Algol', 'Alhena', 'Alioth', 'Alkaid', 'Almach', 'Alnair', 'Alnilam', 'Alnitak', 'Alphard', 'Alphecca', 'Alpheratz', 'Alshain', 'Altair', 'Ankaa', 'Antares', 'Arcturus', 'Arkab Posterior', 'Arkab Prior', 'Arneb', 'Atlas', 'Atria', 'Avior', 'Bellatrix', 'Betelgeuse', 'Canopus', 'Capella', 'Caph', 'Castor', 'Cebalrai', 'Deneb', 'Denebola', 'Diphda', 'Dubhe', 'Electra', 'Elnath', 'Eltanin', 'Enif', 'Etamin', 'Fomalhaut', 'Formalhaut', 'Gacrux', 'Gienah', 'Gienah Corvi', 'Hadar', 'Hamal', 'Izar', 'Kaus Australis', 'Kochab', 'Maia', 'Markab', 'Megrez', 'Menkalinan', 'Menkar', 'Menkent', 'Merak', 'Merope', 'Miaplacidus', 'Mimosa', 'Minkar', 'Mintaka', 'Mirach', 'Mirfak', 'Mirzam', 'Mizar', 'Naos', 'Nihal', 'Nunki', 'Peacock', 'Phecda', 'Polaris', 'Pollux', 'Procyon', 'Rasalgethi', 'Rasalhague', 'Regulus', 'Rigel', 'Rigil Kentaurus', 'Rukbat', 'Sabik', 'Sadalmelik', 'Sadr', 'Saiph', 'Scheat', 'Schedar', 'Shaula', 'Sheliak', 'Sirius', 'Sirrah', 'Spica', 'Suhail', 'Sulafat', 'Tarazed', 'Taygeta', 'Thuban', 'Unukalhai', 'Vega', 'Vindemiatrix', 'Wezen', 'Zaurak', 'Zubenelgenubi']
+                for star in lista_s:
+                    v = ephem.star(star)
+                    v.compute(gatech)
+                        #ax.plot(konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3) 
+                    #ax.text(konw_a(round(math.degrees(v.az), 1)),(round(math.degrees(v.alt), 1)), ' \n'+str(star)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+            
+                    if ( konw_a(round(math.degrees(v.az))) > (lewy_lim-50)) and (konw_a(round(math.degrees(v.az))) < (prawy_lim+50)) and (math.degrees(v.alt) > -10) and (math.degrees(v.alt) < 65):
+                        x,y = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                        #print str(star),"         ",konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),"        ",round(x, 1), round(y,1) 
+                        #ax.plot(konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.2) 
+                        ax.plot(x,y,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=.1) 
+                        ax.text(x,y, ' \n'+str(star)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+
+            
+            ###########
+        
+            #print str(round(math.degrees(v.az), 1))+' '+str(round(math.degrees(v.alt),1))
+            #print str(konw_a(round(math.degrees(v.az), 1)))+' '+str(konw_a(round(math.degrees(v.alt),1)))
+            #print"--"
+            vert_alX=str('bottom') ; hori_alX=str('left')    
+            fontX = {'color':  "white", 'size': 18, 'weight': 'bold', 'family': 'monospace', }
+            fontX_c = {'color':  "black", 'size': 18, 'weight': 'bold', 'family': 'monospace', }
+            
+            vs = ephem.Sun(gatech)
+            vm = ephem.Moon(gatech)
+            vju = ephem.Jupiter(gatech)
+            vsa = ephem.Saturn(gatech)
+            vma = ephem.Mars(gatech)
+            vve = ephem.Venus(gatech)
+
+        
+        
+            if ( konw_a(round(math.degrees(vs.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vs.az))) < (prawy_lim+30)) and (math.degrees(vs.alt) > -30) and (math.degrees(vs.alt) < 75):
+                vsx,vsy = distorsXY1(konw_a(round(math.degrees(vs.az),1)),math.degrees(vs.alt))
+                ax.plot(vsx,vsy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#000000', alpha=1)
+                ax.text(vsx,vsy, ' \n '+sols, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX_c, alpha=0.3)
+                ax.plot(vsx,0,'.',markersize=5, markerfacecolor='none', markeredgecolor='#ffffff', alpha=1) 
+            if ( konw_a(round(math.degrees(vm.az))) > (lewy_lim-40)) and (konw_a(round(math.degrees(vm.az))) < (prawy_lim+40)) and (math.degrees(vm.alt) > -30) and (math.degrees(vm.alt) < 75):
+                vmx,vmy = distorsXY1(konw_a(round(math.degrees(vm.az),1)),math.degrees(vm.alt))
+                ax.plot(vmx,vmy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#000000', alpha=0.3)
+                ax.text(vmx,vmy, ' \n '+luns, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX_c, alpha=0.3)
+            if ( konw_a(round(math.degrees(vju.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vju.az))) < (prawy_lim+30)) and (math.degrees(vju.alt) > -30) and (math.degrees(vju.alt) < 75):
+                vjux,vjuy = distorsXY1(konw_a(round(math.degrees(vju.az),1)),math.degrees(vju.alt))
+                ax.plot(vjux,vjuy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
+                ax.text(vjux,vjuy, ' \n '+jups, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+            if ( konw_a(round(math.degrees(vsa.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vsa.az))) < (prawy_lim+30)) and (math.degrees(vsa.alt) > -30) and (math.degrees(vsa.alt) < 75):
+                vsax,vsay = distorsXY1(konw_a(round(math.degrees(vsa.az),1)),math.degrees(vsa.alt))
+                ax.plot(vsax,vsay,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
+                ax.text(vsax,vsay, ' \n '+sats, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+            if ( konw_a(round(math.degrees(vma.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vma.az))) < (prawy_lim+30)) and (math.degrees(vma.alt) > -30) and (math.degrees(vma.alt) < 75):
+                vmax,vmay = distorsXY1(konw_a(round(math.degrees(vma.az),1)),math.degrees(vma.alt))
+                ax.plot(vmax,vmay,'o',markersize=15, markerfacecolor='none', markeredgecolor='red', alpha=0.3)
+                ax.text(vmax,vmay, ' \n '+mars, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+            if ( konw_a(round(math.degrees(vve.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vve.az))) < (prawy_lim+30)) and (math.degrees(vve.alt) > -30) and (math.degrees(vve.alt) < 75):
+                vvex,vvey = distorsXY1(konw_a(round(math.degrees(vve.az),1)),math.degrees(vve.alt))
+                ax.plot(vvex,vvey,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
+                ax.text(vvex,vvey, ' \n '+vens, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+
+            alfa_cali=0.5
+            fontX = {'color':  "white", 'size': 10, 'weight': 'normal', 'family': 'monospace', }
+
+            vert_alX=str('top') ; hori_alX=str('left')
+            #ax.plot(konw_a(112),3,'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3) 
+            #ax.plot(konw_a(81),3,'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3) 
+            #ax.plot(konw_a(112),3,'o',markersize=35, markerfacecolor='gray', markeredgecolor='none', alpha=0.3) 
+            #ax.plot(konw_a(113.3),2.4,'o',markersize=15, markerfacecolor='none', markeredgecolor='black', alpha=0.3) 
+            
+            orientacyjne= [
+            [12,        1.5        ],
+            [27,	1.5	],
+            [65,	1.2	],
+            [113,	3.4	],
+            [189,	5	],
+            [164,	12	],
+            [162,	6	],
+            [253,	6	],
+            [295.5,	1.5	],
+            [320,	1.5	],
+            [329,	6	],
+            [341, 	8	],
+            [354,	7.5	]]
+            
+            for i in orientacyjne:
+                if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
+                    x,y = distorsXY1(konw_a(i[0]),i[1])
+                    x1,y1 = distorsXY1(konw_a(i[0]),(0))
+                    #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                    ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                    ax.plot([konw_a(x),konw_a(x1)],[y,y1],'-',markersize=15, lw=2,color='yellow', alpha=0.3)
+                    
+            #print i
+            
+            plt.subplots_adjust(left=0.0, bottom=0.1, right=1.0, top=1.0)
+
+        
+            for i,line in enumerate(dataz):
+                #print line
+                plane_dict = line.split(',')
+                
+                #print flight
+                #print plane_dict[1]
+                #print (plane_dict[pentry][3])
+                
+                flight=str(plane_dict[1].strip())
+                if flight == '':
+                    flight = str(plane_dict[0].strip())
+                    
+                #meters=int(str(plane_dict[4].strip()))
+                if is_int_try(str(plane_dict[4].strip())):
+                        meters=int(str(plane_dict[4].strip()))
+                elif is_float_try(str(plane_dict[4].strip())):
+                        meters=int(float(str(plane_dict[4].strip())))
+                else:
+                    meters=10000
+                    
+                distance=float(plane_dict[5].strip())
+                
+                #track=float(360-(270-float(plane_dict[11].strip())))
+                #    azi=np.radians(float(plane_dict[6].strip()))
+                azi=konw_a(float(plane_dict[6].strip()))
+                aaz=konw_a(float(plane_dict[6].strip()))
+                elev=float(plane_dict[7].strip())
+                elunc=float(plane_dict[7].strip())
+                #kolorek=str(plane_dict[pentry][8])
+                kolorek='#ff0000'
+                dziewiec=str(plane_dict[9].strip())
+                dwana=str(plane_dict[12].strip())
+                if i == 0:
+                    if not plane_dict[18].strip() == '':
+                        last_time_fw=str(plane_dict[18].strip())
+                
+                pos_age = int(float(str(plane_dict[29].strip())))
+                if pos_age > 30:
+                    alpha_age = 0.1
+                elif pos_age > 20:
+                    alpha_age = 0.2
+                elif pos_age > 15:
+                    alpha_age = 0.3
+                elif pos_age > 10:
+                    alpha_age = 0.4
+                else:
+                    alpha_age = 0.6
+                    ##################### to bylo aktywne
+                loSep = -10
+                hiSep = 10
+                #if not plane_dict[22].strip() == '':
+                if is_float_try(str(plane_dict[20].strip())):
+                    dist2mo1 = str(plane_dict[19].strip())
+                    deg_missed1 = float(str(plane_dict[20].strip()))
+                    if (loSep < float(deg_missed1) < hiSep):
+                        #moon_s=dist2mo1+'km @'+str(deg_missed1)+deg+' \n '+str(plane_dict[27].strip())+'\n'
+                        moon_s=dist2mo1+'km '+sols+' '+str(deg_missed1)+deg+' \n'
+                    else:
+                        #moon_s='X n/a '+str(plane_dict[27].strip())+'\n'
+                        #moon_s='X1 n/a '+'\n'
+                        moon_s=''
+                        #dist2mo+' o '+str(deg_missed)+deg+' \n '
+                else:
+                    deg_missed1 = ''
+                    #moon_s= 'X -- '+str(plane_dict[27].strip())+'\n'
+                    #moon_s= 'X1 -- '+'\n'
+                    moon_s= ''
+                    #if float(deg_missed) < 90:
+                
+                
+                #if not plane_dict[26].strip() == '':
+                if is_float_try(str(plane_dict[24].strip())):
+                    dist2mo2 = str(plane_dict[23].strip())
+                    deg_missed2 = float(str(plane_dict[24].strip()))
+                    if (loSep < float(deg_missed2) < hiSep):
+                        #sun_s=dist2mo2+'km @'+str(deg_missed2)+deg+'  '+str(plane_dict[28].strip())+'\n'
+                        sun_s=dist2mo2+'km '+luns+' '+str(deg_missed2)+deg+' \n'
+                    else:
+                        #sun_s='X n/a '+str(plane_dict[28].strip())+'\n'
+                        #sun_s='X2 n/a '+'\n'
+                        sun_s=''
+                        #dist2mo+' o '+str(deg_missed)+deg+' \n '
+                else:
+                    deg_missed2 = ''
+                    #sun_s= 'X -- '+str(plane_dict[28].strip())+'\n'
+                    #sun_s= 'X2 -- '+'\n'
+                    sun_s= ''
+                    #if float(deg_missed) < 90:
+                            
+                    #print flight,dziewiec, dwana
+                
+                ##################### to bylo aktywne
+                    
+                #########################    
+                #
+                # marker_style = dict(linestyle=':', color='0.8', markersize=10,mfc="C0", mec="C0")
+                # marker_style.update(mec="None", markersize=15)
+                # marker = "$[$"+" "+"$]$"
+                # ax.plot(azi,elev, marker=marker, markersize=5, markerfacecolor='none', markeredgecolor=str(kolorek)) 
+                #
+                #########################
+        
+                #if aaz >= 0 and aaz < 90:
+                    #        vert_al=str('top') ; hori_al=str('left')
+                #elif aaz >= 90 and aaz < 180:
+                    #        vert_al=str('bottom') ; hori_al=str('left')
+                #elif aaz >= 180 and aaz < 270:
+                    #        vert_al=str('bottom') ; hori_al=str('right')
+                #elif aaz >= 270:
+                    #        vert_al=str('top') ; hori_al=str('right')
+                vert_al=str('bottom') ; hori_al=str('right')
+                fonta = {'color':  "black", 'size': 12, 'weight': 'normal', 'family': 'monospace', }
+                fontb = {'color':  "black", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                fontc = {'color':  "black", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                #fonta['color'] = 'kupa'
+                #print fonta    
+                
+                if meters < 5000:
+                    fonta['color'] = '#ff9900' ; fonta['size'] = '12' 
+                    fontb['color'] = '#ff9900' ; fonta['size'] = '12'
+                    fontc['color'] = '#ff9900' ; fonta['size'] = '12'
+                elif (dwana == 'WARNING' and dziewiec != "RECEDING") and (meters >= 5000):
+                    fonta['color'] = '#ff0000' 
+                    fontb['color'] = '#ff0000'
+                    fontc['color'] = '#ffffff'
+                elif (dwana == 'WARNING' and dziewiec == "RECEDING") and (meters >= 5000):
+                    fonta['color'] = '#660000' 
+                    fontb['color'] = '#660000'
+                    fontc['color'] = '#ffffff'
+                elif (dwana != 'WARNING' and dziewiec == "RECEDING") and (meters >= 5000):
+                    fonta['color'] = '#8000ff' 
+                    fontb['color'] = '#8000ff'
+                    fontc['color'] = '#ffffff'
+                else: 
+                    fonta['color'] = '#ff00ff' 
+                    fontb['color'] = '#ff00ff' 
+                    fontc['color'] = '#ffffff' 
+                #moon_s='aaaa'
+                if aaz > lewy_lim-23 and aaz < prawy_lim+23: 
+                        aazx,eluncy = distorsXY1(konw_a(aaz),elunc)
+                        if meters < 5000:
+                            fonta['size'] = '12' 
+                            fonta['size'] = '12'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment='bottom', horizontalalignment=hori_al, fontdict=fontc,alpha=(alpha_age+0.2))
+                        elif (distance > 60) and (meters >= 5000):
+                            fonta['size'] = '10' 
+                            fonta['size'] = '10'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment='bottom', horizontalalignment=hori_al, fontdict=fontc,alpha=alpha_age )
+                        elif (distance <= 60) and distance > 40 and (meters >= 5000):
+                            fonta['size'] = '10' 
+                            fonta['size'] = '10'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc,alpha=alpha_age )
+                        elif (distance <= 40) and distance > 20 and (meters >= 5000):
+                            fonta['size'] = '11' 
+                            fonta['size'] = '11'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc,alpha=alpha_age )
+                        elif (distance <= 20) and (meters >= 5000):
+                            fonta['size'] = '11' 
+                            fonta['size'] = '11'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc,alpha=alpha_age )
+                        else:
+                            fonta['size'] = '12' 
+                            fonta['size'] = '12'
+                            ax.plot(aazx,eluncy,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'],alpha=0.3) 
+                            ax.text(aazx,eluncy, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc,alpha=alpha_age )
+
+                        aazs        = []
+                        elevis        = []
+                        #aazs.append(aazx)
+                        #elevis.append(eluncy)
+                        ############################## tranzyty
+                        if is_float_try(str(deg_missed1)):
+                             if (loSep < float(deg_missed1) < hiSep):
+                                #if not plane_dict[41].strip() == '':
+                                fut_alt = float(plane_dict[22].strip())
+                                fut_az  = float(str(plane_dict[21].strip()))
+                                #moon_s=dist2mo+' X '+moon_miss_by+' \n '
+                                #aazx,eluncy
+                                if not fut_az == 0:
+                                    object1 = str(plane_dict[27].strip())
+                                    if not object1  == '':
+                                        if object1 == 'Moon':
+                                            v = ephem.Moon(gatech)
+                                        elif object1 == 'Sun':
+                                            v = ephem.Sun(gatech)
+                                        elif object1 == 'Mars':
+                                            v = ephem.Mars(gatech)
+                                        elif object1 == 'Jupiter':
+                                            v = ephem.Jupiter(gatech)
+                                        elif object1 == 'Saturn':
+                                            v = ephem.Saturn(gatech)
+                                        else:
+                                            v = ephem.star(object1)
+                                            v.compute(gatech)
+
+                                    vsx,vsy = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                                    fut_az,fut_alt = distorsXY1(float(fut_az),float(fut_alt))
+                                    tst_x=[vsx, float(fut_az), aazx]
+                                    tst_y=[vsy, float(fut_alt) ,eluncy]
+
+                                    #print fut_az, fut_alt 
+                                    #tst_x=[vmax, aazx]
+                                    #tst_y=[vmay ,eluncy]
+                                    ax.plot(tst_x,tst_y,'--',markersize=10, color='yellow', lw=1,alpha=0.3)
+
+                        if is_float_try(str(deg_missed2)):
+                            if (loSep < float(deg_missed2) < hiSep):
+                                #if not plane_dict[41].strip() == '':
+                                fut_alt = float(plane_dict[26].strip())
+                                fut_az  = konw_a(float(str(plane_dict[25].strip())))
+
+                                #moon_s=dist2mo+' X '+moon_miss_by+' \n '
+                                #aazx,eluncy
+                                if not fut_az == 0:
+                                    object2 = str(plane_dict[28].strip())
+                                    if not object2  == '':
+                                        if object2 == 'Moon':
+                                            v = ephem.Moon(gatech)
+                                        elif object2 == 'Sun':
+                                            v = ephem.Sun(gatech)
+                                        elif object2 == 'Mars':
+                                            v = ephem.Mars(gatech)
+                                        elif object2 == 'Jupiter':
+                                            v = ephem.Jupiter(gatech)
+                                        elif object2 == 'Saturn':
+                                            v = ephem.Saturn(gatech)
+                                        else:
+                                            v = ephem.star(object2)
+                                            v.compute(gatech)
+
+                                    vsx,vsy = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                                    fut_az,fut_alt = distorsXY1(float(fut_az),float(fut_alt))
+                                    tst_x=[vsx, float(fut_az), aazx]
+                                    tst_y=[vsy, float(fut_alt) ,eluncy]
+
+                                    #print fut_az, fut_alt 
+                                    #tst_x=[vmax, aazx]
+                                    #tst_y=[vmay ,eluncy]
+                                    ax.plot(tst_x,tst_y,'--',markersize=10, color='blue', lw=1,alpha=0.2)
+                        ############################## tranzyty koniec ###
+                        ######### start traili 
+                        tmp_i = 0
+                        if not plane_dict[15].strip() == '':
+                            words1 = plane_dict[15]
+                            words2 = plane_dict[16]
+                            plane_pos1 = words1.split(';')
+                            plane_pos2 = words2.split(';')        
+                            plane_pos_len = len(plane_pos1)
+                            for i,word in enumerate(plane_pos1):
+                                #print plane_pos1[i]
+                                #print plane_pos2[i]
+                                if not plane_pos1[i].strip() == '':
+                                    aaz1=konw_a(float(plane_pos1[i].strip()))
+                                    ele1=float(plane_pos2[i].strip())
+                                    aaz1a,ele1a = distorsXY1(aaz1,ele1)
+                                    aazs.append(aaz1a)
+                                    elevis.append(ele1a)
+                                    if ((plane_pos_len-1) > i > 0):
+                                        if aazs[i] > lewy_lim-23 and aazs[i] < prawy_lim+23: 
+                                            alpha_hist = round(1/float(plane_pos_len/float(i)),2)
+                                            #ax.plot((aazs[i-1],aazs[i]),(elevis[i-1], elevis[i]),'-',markersize=10, color=fontb['color'], lw=1, alpha=(alpha_hist/2))
+                                    else:
+                                        alpha_hist = 1
+                                    tmp_i = i
+                            #ax.plot(aaz1a,ele1a,'o',markersize=3, color=fontb['color'],alpha=alfa_trail)
+                            ax.plot((aazs[0:tmp_i+1]),(elevis[0:tmp_i+1]),'-',markersize=10, color=fontb['color'], lw=1, alpha=0.6)
+
+                        #ax.plot(aazs,elevis,'o',markersize=5, color=fontb['color'], lw=1.5,alpha=0.3) 
+                        #ax.plot(aazs,elevis,'-',markersize=5, color='white', lw=1.5,alpha=0.3) 
+                        #ax.plot(aazs,elevis,'-',markersize=5, color=fontb['color'], lw=1,alpha=0.3) 
+                        #########koniec traili 
+            iss=ephem.readtle(issline[0], issline[1], issline[2])
+            iss.compute(gatech)
+            #print math.degrees(iss.alt),math.degrees(iss.az)
+            #info = gatech.next_pass(iss)
+            #print("Rise time: %s azimuth: %s" % (info[0], info[1]))
+            if iss.eclipsed:
+                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                vert_alX=str('bottom') ; hori_alX=str('left')
+            else:
+                    fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                    vert_alX=str('bottom') ; hori_alX=str('left')
+            if round(math.degrees(iss.alt),1) > 0:
+
+                issaz,issele = distorsXY1(konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
+                #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+                ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
+
+            iss_azis=[]
+            iss_elevis=[]
+            ISS_PREDICT=[-180,-150,-120,-90,-60,-30,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+            for i in ISS_PREDICT:
+                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=i)#+ datetime.timedelta(minutes=35)
+                gatech.date = ephem.Date(d_t1)
+                iss.compute(gatech)
+                if round(math.degrees(iss.alt),1) > 0:
+                    issaz,issele = distorsXY1(konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                    ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
+                    iss_azis.append(issaz)
+                    iss_elevis.append(issele)
+                ####print iss.az,round(math.degrees(iss.alt),1)
+
+            #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
+            ####print iss_elevis
+        
+            gatech.date = ephem.now() #RESET!
+            #ax.plot(float(in_center),15,'+',markersize=5, color='darkgreen', alpha=1)
+            '''
+            ax.plot(float(in_center),50,'+',markersize=15, color='darkgreen', alpha=1)
+            ax.plot(float(in_center)+55,50,'+',markersize=15, color='darkgreen', alpha=1)
+            ax.plot(float(in_center)-55,50,'+',markersize=15, color='darkgreen', alpha=1)
+            ax.plot(float(in_center)+55,0,'+',markersize=15, color='darkgreen', alpha=1)
+            ax.plot(float(in_center)-55,0,'+',markersize=15, color='darkgreen', alpha=1)
+            '''
+            kalib= [
+            [float(in_center),	        15	],
+            [float(in_center),	        50	],
+            [float(in_center)+55,       50	],
+            [float(in_center)-55,       50	],
+            [float(in_center)+55,       25	],
+            [float(in_center)-55,       25	],
+            [float(in_center)+55,       0	],
+            [float(in_center)-55,       0	]]
+            
+            '''
+            [float(in_center),		],
+            [float(in_center),	6	],
+            [float(in_center),	6	],
+            [float(in_center),	1.5	],
+            [float(in_center),	1.5	],
+            [float(in_center),	6	],
+            [float(in_center), 	8	],
+            [float(in_center),	7.5	]]
+            '''
+            '''
+            for i in kalib:
+                    if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
+                    x,y = distorsXY1(konw_a(i[0]),i[1])
+                    ax.plot(konw_a(i[0]), i[1],'+',markersize=15, color='green', alpha=1)
+                    ax.plot(konw_a(x), y,'+',markersize=15, color='white', alpha=1)
+                    #x1,y1 = distorsXY1(konw_a(i[0]),(0))
+                    #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                    #ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                    ax.plot([konw_a(x),konw_a(i[0])],[y,i[1]],'-',markersize=15, lw=2,color='yellow', alpha=0.3)        
+            '''
+            '''
+            for x in range(int(lewy_lim-30),int(prawy_lim+31),5):
+                xdoa3 = []
+                ydob3 = []
+                for y in range(-0,61,10):
+                    x1,y1 = distorsXY1a(x,y)
+                    ax.plot(x,y,"*",markersize=2, markerfacecolor='none', markeredgecolor='red')
+                    ax.plot(x1,y1,'o',markersize=5, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3) 
+                    # xdoa3.append(x)
+                    xdoa3.append(x1)
+                    # ydob3.append(y)
+                    ydob3.append(y1)        
+                ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
+                # print x,x1,"                ",y,y1
+
+            for y in range(-0,61,10):        
+                xdoa3 = []
+                ydob3 = []
+                    for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
+                    x1,y1 = distorsXY1a(x,y)
+                    xdoa3.append(x1)
+                    ydob3.append(y1)        
+                ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
+
+            '''
+            #gatech.date = ephem.now()
+            testtime = datetime.datetime.now().strftime('%H:%M:%S')
+            fontX = {'color':  "white", 'size': 10, 'weight': 'normal', 'family': 'monospace', }
+            time_pl = float(in_center) + 30
+
+            ax.text(int(time_pl),-2., str('Plot_t:  '+testtime), fontdict=fontX, alpha=1)
+            ax.text(int(time_pl)+15,-2, str('Radar_t: '+last_time_fw), fontdict=fontX, alpha=1)
+            
+            s, (width, height) = canvas.print_to_buffer()
+            foreground = Image.frombytes("RGBA", (width, height), s)#,alpha=1)
+            imgHD.paste(foreground, (0, 0), foreground)
+
+            opencvImageHD = cv2.cvtColor(np.array(imgHD), cv2.COLOR_RGB2BGR)
+
+            ###############################################################################################################
+
+        datafileA7=open(DataFileNameA7, 'r')
+        datazA7=datafileA7.readlines()
+        datafileA7.close()
+
+
+        datafileA8=open(DataFileNameA8, 'r')
+        datazA8=datafileA8.readlines()
+        datafileA8.close()
         
         if self.mono == 0: 
             opencvImageHD = cv2.cvtColor(np.array(imgHD), cv2.COLOR_RGB2BGR)
             ocvi = opencvImageHD.astype(np.single)
-        
-            ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol) / 255) * (255 - ocvi)) + (1 - op) * ocvi
+            if not float(op) == float(datazA7[0]):
+                op = float(datazA7[0])
+            if not str(maska_str) == str(datazA8[0]):
+                print("/home/pi/zwo-skycam/"+maska_str+" -> /home/pi/zwo-skycam/"+str(datazA8[0]))
+                maska_str = str(datazA8[0])
+                maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+maska_str) # niezle na niebieskie niebo
+                maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)        
+            ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol0) / 255) * (255 - ocvi)) + (1 - op) * ocvi
             cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
         else:
-            imgHD.save(tmpfld+'/wsc_720p_tmp.jpg')
-            
+            ocvi1 = opencvImageHD
+            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+            #imgHD.save(tmpfld+'/wsc_720p_tmp.jpg')
+
         shutil.copy( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+"/WSC.tmp/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+'/wsc_720p.jpg')
-        
         #imim.save(tmpfld+'/wsc_fullsize.jpg',"JPEG", quality=95)
         imim.save(tmpfld+'/wsc_fullsize_tmp.jpg')
-        
         #imcv2.save(tmpfld+'/wsc_720p.jpg')
-        
         #shutil.copy( tmpfld+'/wsc_720p.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_fullsize_tmp.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")
         #shutil.move( tmpfld+'/wsc_720p.jpg', tmpfld+'/img.jpg')

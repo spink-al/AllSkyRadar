@@ -89,8 +89,8 @@ datazA8=datafileA8.readlines()
 datafileA8.close()
 
 maska_str = str(datazA8[0])
-print("/home/pi/zwo-skycam/"+maska_str)
-maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+str(maska_str)) # niezle na niebieskie niebo
+print(miscfld+"/"+str(maska_str))
+maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str)) 
 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)
 op = float(datazA7[0])
 
@@ -108,10 +108,10 @@ def is_int_try(str):
     except ValueError:
         return False
 
-def rotate_around_point_highperf(x,y, radians, origin=(0, 0)):
-    global in_center
-    global prawy_lim
-    global lewy_lim
+def rotate_around_point_highperf(in_center, x,y, radians, origin=(0, 0)):
+    #global in_center
+    #global prawy_lim
+    #global lewy_lim
 
     #x, y = x,y
     offset_x, offset_y = origin
@@ -124,7 +124,7 @@ def rotate_around_point_highperf(x,y, radians, origin=(0, 0)):
 
     return qx, qy
 
-def distorsXY1(x,y):
+def distorsXY1(in_center,x,y):
     """
     xdoa1 = []
     ydob1 = []
@@ -167,7 +167,7 @@ def distorsXY1(x,y):
     ydob1.append(y1)	
     ax.plot(xdoa1,ydob1, '--',markersize=10, color='yellow', lw=1,alpha=.2)
     """
-    x1,y1 = distorsXY2(x,y)
+    x1,y1 = distorsXY2(in_center,x,y)
     return x1,y1	
 
 def distorsXY1a(x,y):
@@ -219,14 +219,14 @@ def distorsXY1a(x,y):
     ydob1.append(y1)	
     ax.plot(xdoa1,ydob1, '-',markersize=10, color='red', lw=1,alpha=0.3)
     """
-    x1,y1 = distorsXY2(x,y)
+    x1,y1 = distorsXY2(in_center,x,y)
     return x1,y1
 
 
-def distorsXY2(x,y):
-    global in_center
-    global prawy_lim
-    global lewy_lim
+def distorsXY2(in_center,x,y):
+    #global in_center
+    #global prawy_lim
+    #global lewy_lim
     initX 	=	lewy_lim
     initY 	= 	20 
     finalX 	= 	prawy_lim
@@ -250,7 +250,7 @@ def distorsXY2(x,y):
         T1              =       -1.25
         V1              =       0.0006
     elif (90 < int(in_center) <= 135):
-        T1              =       -1.0
+        T1              =       -2.5
         V1              =       0.0007
     elif (135 < int(in_center) <= 160):
         T1              =       0.25
@@ -276,6 +276,7 @@ def distorsXY2(x,y):
     else:
         T1              =       0.0
         V1              =       0.0009
+    #print(int(in_center), T1)
     #V1 = 0.0008 ########## <<<<<<<<<<<-------------- V1 V1 V1
     
             
@@ -292,7 +293,7 @@ def distorsXY2(x,y):
     srcY = (midY + (rSrcY + nY)) 
     srcX = (midX + (rSrcX + nX)) 
     radians_r = math.radians(T1)#75)
-    srcX, srcY = rotate_around_point_highperf(srcX, srcY, radians_r, origin=(midX, midY))
+    srcX, srcY = rotate_around_point_highperf(in_center, srcX, srcY, radians_r, origin=(midX, midY))
 
     return srcX, srcY
 
@@ -566,11 +567,15 @@ class AsyncWrite(threading.Thread):
         self.aktual_t_f = aktual_t_f
 
     def run(self):
-        global mniej 
+        global mniej
         global wiecej
         global maska_str
         global maskaAntyFiol0
         global op
+        
+        global center_lim
+        global prawy_lim
+        global lewy_lim
 
         datafile2=open(DataFileName2, 'r')
         dataz2=datafile2.readlines()
@@ -651,9 +656,6 @@ class AsyncWrite(threading.Thread):
         spines_ovrl="1"
         stars_ovrl="0"
         if (overlay == "1"):
-            global center_lim
-            global prawy_lim
-            global lewy_lim
             alfa_trail=0.25
             in_center = 260
             center_lim=float(in_center)
@@ -709,8 +711,8 @@ class AsyncWrite(threading.Thread):
                 axtl=-1.5 ##-3
                 axbl=52.25 ##58
             elif (90 < int(in_center) <= 135):
-                axtl=-2.5 ##-3
-                axbl=52.25 ##58
+                axtl= -2.0 #-2.5  ##-3
+                axbl= 51.75 #52.25 ##58
             elif (135 < int(in_center) <= 160):
                 axtl=-2.75 ##-3
                 axbl=54.0 ##
@@ -750,11 +752,11 @@ class AsyncWrite(threading.Thread):
             fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }        
             vert_alX=str('top') ; hori_alX=str('center')    
             for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
-                x1,y1 = distorsXY1a(x,0)
+                x1,y1 = distorsXY1(in_center,x,0)
                 ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
                 ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
         
-            #dół-góra limity
+            #dol‚-gora limity
             #ax.set_ylim(0,55)        
             #ax.set_xticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
             #ax.set_yticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
@@ -786,7 +788,7 @@ class AsyncWrite(threading.Thread):
             #ax.tick_params(axis='y', labelcolor='#ff0000')
             #ax.set_yticklabels('y')
             #ax.set_yticklabels(ax.get_yticks()[::-1])
-            #ax.spines['polar'].set_visible(False) #wyłącza zewn krawedz
+            #ax.spines['polar'].set_visible(False) #wylacza zewn krawedz
             
             #ax.set_yticklabels([])
             #ax.grid(True)
@@ -806,7 +808,7 @@ class AsyncWrite(threading.Thread):
                     #ax.text(konw_a(round(math.degrees(v.az), 1)),(round(math.degrees(v.alt), 1)), ' \n'+str(star)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
             
                     if ( konw_a(round(math.degrees(v.az))) > (lewy_lim-50)) and (konw_a(round(math.degrees(v.az))) < (prawy_lim+50)) and (math.degrees(v.alt) > -10) and (math.degrees(v.alt) < 65):
-                        x,y = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                        x,y = distorsXY1(in_center, konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
                         #print str(star),"         ",konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),"        ",round(x, 1), round(y,1) 
                         #ax.plot(konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.2) 
                         ax.plot(x,y,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=.1) 
@@ -832,28 +834,28 @@ class AsyncWrite(threading.Thread):
         
         
             if ( konw_a(round(math.degrees(vs.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vs.az))) < (prawy_lim+30)) and (math.degrees(vs.alt) > -30) and (math.degrees(vs.alt) < 75):
-                vsx,vsy = distorsXY1(konw_a(round(math.degrees(vs.az),1)),math.degrees(vs.alt))
+                vsx,vsy = distorsXY1(in_center, konw_a(round(math.degrees(vs.az),1)),math.degrees(vs.alt))
                 ax.plot(vsx,vsy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#000000', alpha=1)
                 ax.text(vsx,vsy, ' \n '+sols, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX_c, alpha=0.3)
                 ax.plot(vsx,0,'.',markersize=5, markerfacecolor='none', markeredgecolor='#ffffff', alpha=1) 
             if ( konw_a(round(math.degrees(vm.az))) > (lewy_lim-40)) and (konw_a(round(math.degrees(vm.az))) < (prawy_lim+40)) and (math.degrees(vm.alt) > -30) and (math.degrees(vm.alt) < 75):
-                vmx,vmy = distorsXY1(konw_a(round(math.degrees(vm.az),1)),math.degrees(vm.alt))
+                vmx,vmy = distorsXY1(in_center, konw_a(round(math.degrees(vm.az),1)),math.degrees(vm.alt))
                 ax.plot(vmx,vmy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#000000', alpha=0.3)
                 ax.text(vmx,vmy, ' \n '+luns, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX_c, alpha=0.3)
             if ( konw_a(round(math.degrees(vju.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vju.az))) < (prawy_lim+30)) and (math.degrees(vju.alt) > -30) and (math.degrees(vju.alt) < 75):
-                vjux,vjuy = distorsXY1(konw_a(round(math.degrees(vju.az),1)),math.degrees(vju.alt))
+                vjux,vjuy = distorsXY1(in_center, konw_a(round(math.degrees(vju.az),1)),math.degrees(vju.alt))
                 ax.plot(vjux,vjuy,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
                 ax.text(vjux,vjuy, ' \n '+jups, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
             if ( konw_a(round(math.degrees(vsa.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vsa.az))) < (prawy_lim+30)) and (math.degrees(vsa.alt) > -30) and (math.degrees(vsa.alt) < 75):
-                vsax,vsay = distorsXY1(konw_a(round(math.degrees(vsa.az),1)),math.degrees(vsa.alt))
+                vsax,vsay = distorsXY1(in_center, konw_a(round(math.degrees(vsa.az),1)),math.degrees(vsa.alt))
                 ax.plot(vsax,vsay,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
                 ax.text(vsax,vsay, ' \n '+sats, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
             if ( konw_a(round(math.degrees(vma.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vma.az))) < (prawy_lim+30)) and (math.degrees(vma.alt) > -30) and (math.degrees(vma.alt) < 75):
-                vmax,vmay = distorsXY1(konw_a(round(math.degrees(vma.az),1)),math.degrees(vma.alt))
+                vmax,vmay = distorsXY1(in_center, konw_a(round(math.degrees(vma.az),1)),math.degrees(vma.alt))
                 ax.plot(vmax,vmay,'o',markersize=15, markerfacecolor='none', markeredgecolor='red', alpha=0.3)
                 ax.text(vmax,vmay, ' \n '+mars, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
             if ( konw_a(round(math.degrees(vve.az))) > (lewy_lim-30)) and (konw_a(round(math.degrees(vve.az))) < (prawy_lim+30)) and (math.degrees(vve.alt) > -30) and (math.degrees(vve.alt) < 75):
-                vvex,vvey = distorsXY1(konw_a(round(math.degrees(vve.az),1)),math.degrees(vve.alt))
+                vvex,vvey = distorsXY1(in_center, konw_a(round(math.degrees(vve.az),1)),math.degrees(vve.alt))
                 ax.plot(vvex,vvey,'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3)
                 ax.text(vvex,vvey, ' \n '+vens, verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
 
@@ -883,15 +885,15 @@ class AsyncWrite(threading.Thread):
             
             for i in orientacyjne:
                 if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
-                    x,y = distorsXY1(konw_a(i[0]),i[1])
-                    x1,y1 = distorsXY1(konw_a(i[0]),(0))
+                    x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
+                    x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
                     #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
                     ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
                     ax.plot([konw_a(x),konw_a(x1)],[y,y1],'-',markersize=15, lw=2,color='yellow', alpha=0.3)
                     
             #print i
             
-            plt.subplots_adjust(left=0.0, bottom=0.1, right=1.0, top=1.0)
+            plt.subplots_adjust(left=0.0, bottom=0.13, right=1.0, top=1.0)
 
         
             for i,line in enumerate(dataz):
@@ -1033,7 +1035,7 @@ class AsyncWrite(threading.Thread):
                     fontc['color'] = '#ffffff' 
                 #moon_s='aaaa'
                 if aaz > lewy_lim-23 and aaz < prawy_lim+23: 
-                        aazx,eluncy = distorsXY1(konw_a(aaz),elunc)
+                        aazx,eluncy = distorsXY1(in_center, konw_a(aaz),elunc)
                         if meters < 5000:
                             fonta['size'] = '12' 
                             fonta['size'] = '12'
@@ -1094,8 +1096,8 @@ class AsyncWrite(threading.Thread):
                                             v = ephem.star(object1)
                                             v.compute(gatech)
 
-                                    vsx,vsy = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
-                                    fut_az,fut_alt = distorsXY1(float(fut_az),float(fut_alt))
+                                    vsx,vsy = distorsXY1(in_center, konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                                    fut_az,fut_alt = distorsXY1(in_center, float(fut_az), float(fut_alt))
                                     tst_x=[vsx, float(fut_az), aazx]
                                     tst_y=[vsy, float(fut_alt) ,eluncy]
 
@@ -1129,8 +1131,8 @@ class AsyncWrite(threading.Thread):
                                             v = ephem.star(object2)
                                             v.compute(gatech)
 
-                                    vsx,vsy = distorsXY1(konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
-                                    fut_az,fut_alt = distorsXY1(float(fut_az),float(fut_alt))
+                                    vsx,vsy = distorsXY1(in_center, konw_a(round(math.degrees(v.az),1)),math.degrees(v.alt))
+                                    fut_az,fut_alt = distorsXY1(in_center, float(fut_az),float(fut_alt))
                                     tst_x=[vsx, float(fut_az), aazx]
                                     tst_y=[vsy, float(fut_alt) ,eluncy]
 
@@ -1153,7 +1155,7 @@ class AsyncWrite(threading.Thread):
                                 if not plane_pos1[i].strip() == '':
                                     aaz1=konw_a(float(plane_pos1[i].strip()))
                                     ele1=float(plane_pos2[i].strip())
-                                    aaz1a,ele1a = distorsXY1(aaz1,ele1)
+                                    aaz1a,ele1a = distorsXY1(in_center,aaz1,ele1)
                                     aazs.append(aaz1a)
                                     elevis.append(ele1a)
                                     if ((plane_pos_len-1) > i > 0):
@@ -1183,7 +1185,7 @@ class AsyncWrite(threading.Thread):
                     vert_alX=str('bottom') ; hori_alX=str('left')
             if round(math.degrees(iss.alt),1) > 0:
 
-                issaz,issele = distorsXY1(konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
                 ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
                 #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
                 ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
@@ -1196,7 +1198,7 @@ class AsyncWrite(threading.Thread):
                 gatech.date = ephem.Date(d_t1)
                 iss.compute(gatech)
                 if round(math.degrees(iss.alt),1) > 0:
-                    issaz,issele = distorsXY1(konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                    issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
                     ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
                     iss_azis.append(issaz)
                     iss_elevis.append(issele)
@@ -1237,10 +1239,10 @@ class AsyncWrite(threading.Thread):
             '''
             for i in kalib:
                     if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
-                    x,y = distorsXY1(konw_a(i[0]),i[1])
+                    x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
                     ax.plot(konw_a(i[0]), i[1],'+',markersize=15, color='green', alpha=1)
                     ax.plot(konw_a(x), y,'+',markersize=15, color='white', alpha=1)
-                    #x1,y1 = distorsXY1(konw_a(i[0]),(0))
+                    #x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
                     #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
                     #ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
                     ax.plot([konw_a(x),konw_a(i[0])],[y,i[1]],'-',markersize=15, lw=2,color='yellow', alpha=0.3)        
@@ -1301,9 +1303,9 @@ class AsyncWrite(threading.Thread):
             if not float(op) == float(datazA7[0]):
                 op = float(datazA7[0])
             if not str(maska_str) == str(datazA8[0]):
-                print("/home/pi/zwo-skycam/"+maska_str+" -> /home/pi/zwo-skycam/"+str(datazA8[0]))
+                print(miscfld+"/"+str(maska_str)+" -> /home/pi/zwo-skycam/"+str(datazA8[0]))
                 maska_str = str(datazA8[0])
-                maskaAntyFiol0 = cv2.imread("/home/pi/zwo-skycam/"+maska_str) # niezle na niebieskie niebo
+                maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str)) 
                 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)        
             ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol0) / 255) * (255 - ocvi)) + (1 - op) * ocvi
             cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])

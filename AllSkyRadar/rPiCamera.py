@@ -15,7 +15,19 @@ from matplotlib.figure import Figure
 import math
 import ephem
 import os
+import importlib
 import ASR_Conf
+import WSC_Conf
+
+w_resize = WSC_Conf.w_resize
+h_resize = WSC_Conf.h_resize
+q_resize = WSC_Conf.q_resize
+q_fullsize = WSC_Conf.q_fullsize
+cam_azimuth  = WSC_Conf.cam_azimuth
+
+print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+print(cam_azimuth)
+
 
 tmpfld = ASR_Conf.TMP_FLDR
 miscfld = ASR_Conf.MISC_FLDR
@@ -175,10 +187,10 @@ def distorsXY1(in_center,x,y):
     return x1,y1	
 
 def distorsXY1a(x,y):
-    # unused
-    global in_center
-    global prawy_lim
-    global lewy_lim
+    # unused normaly, there is commented part of code which adds another distortion layer for comparison 
+    #global in_center
+    #global prawy_lim
+    #global lewy_lim
     """
     xdoa1 = []
     ydob1 = []
@@ -229,14 +241,14 @@ def distorsXY1a(x,y):
 
 
 def distorsXY2(in_center,x,y):
-    #global in_center
-    #global prawy_lim
-    #global lewy_lim
+    #
+    #
+    #
     initX 	=	lewy_lim # should be passed like in_center?!
     initY 	= 	20 
     finalX 	= 	prawy_lim # should be passed like in_center?!
     finalY 	= 	0 
-
+    #print(lewy_lim)
     midX 	= 	float(finalX - initX) /2
     midY 	= 	float(finalY - initY) /2
     midX 	= 	midX + initX
@@ -365,6 +377,9 @@ def cap_d():
     datazA6=datafileA6.readlines()
     datafileA6.close()
     zerocust = int(str(datazA6[0]))
+    global w_resize
+    global h_resize
+    global cam_azimuth
     
     # lens shading, don't touch, using mask atm
     if zerocust == -1:
@@ -433,6 +448,19 @@ def cap_d():
         camera.lens_shading_table=lst
         
     while True:
+        importlib.reload(WSC_Conf)
+
+        w_resize = WSC_Conf.w_resize
+        h_resize = WSC_Conf.h_resize
+        q_resize = WSC_Conf.q_resize
+        q_fullsize = WSC_Conf.q_fullsize
+
+        cam_azimuth  = WSC_Conf.cam_azimuth
+        
+        
+        print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+        print(cam_azimuth)
+
         # exposure read from file
         datafile0=open(DataFileName0, 'r')
         dataz0=datafile0.readlines()
@@ -586,7 +614,7 @@ class AsyncWrite(threading.Thread):
         global center_lim
         global prawy_lim
         global lewy_lim
-
+        #import WSC_Conf
         datafile2=open(DataFileName2, 'r')
         dataz2=datafile2.readlines()
         datafile2.close()
@@ -647,7 +675,7 @@ class AsyncWrite(threading.Thread):
         #cv2.imwrite(tmpfld+'/img1.jpg', imcv, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
 
         # resize for on-the-fly h264 compression
-        imgHD = imim.resize((1280, 720), Image.LANCZOS)
+        imgHD = imim.resize((int(w_resize), int(h_resize)), Image.LANCZOS)
 
 
         ###############################################################################################################
@@ -667,7 +695,7 @@ class AsyncWrite(threading.Thread):
         stars_ovrl="0" # usefull for calibration of distortion
         if (overlay == "1"):
             alfa_trail=0.25
-            in_center = 260 # azimuth in center of image
+            in_center = int(cam_azimuth) # azimuth in center of image
             center_lim=float(in_center)
         
             #print center_lim
@@ -710,7 +738,7 @@ class AsyncWrite(threading.Thread):
             ##########################################################################
             #ax = plt(figsize=(19.20, 10.40))
             
-            plt = Figure(figsize=(12.80, 7.20)) # 1280x720px
+            plt = Figure(figsize=(float(w_resize)/100, float(h_resize)/100)) # WSC_Conf.py
             plt.patch.set_alpha(0)
             canvas = FigureCanvasAgg(plt)
             ax = plt.add_subplot(111)#, facecolor='#ff0000')  # create figure & 1 axis
@@ -767,7 +795,7 @@ class AsyncWrite(threading.Thread):
                 ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
                 ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
         
-            #dol‚-gora limity
+            #dolâ€š-gora limity
             #ax.set_ylim(0,55)        
             #ax.set_xticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
             #ax.set_yticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
@@ -904,7 +932,8 @@ class AsyncWrite(threading.Thread):
                     
             #print i
             
-            plt.subplots_adjust(left=0.0, bottom=0.13, right=1.0, top=1.0)
+            # there is another way above, search for: "correction up/down for unleveled axis of rotation"
+            plt.subplots_adjust(left=0.0, bottom=0.1, right=1.0, top=1.0)
 
         
             for i,line in enumerate(dataz):
@@ -1321,16 +1350,16 @@ class AsyncWrite(threading.Thread):
                 maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str)) 
                 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)        
             ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol0) / 255) * (255 - ocvi)) + (1 - op) * ocvi
-            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
         else:
             ocvi1 = opencvImageHD
-            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
             #imgHD.save(tmpfld+'/wsc_720p_tmp.jpg')
 
         shutil.copy( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+"/WSC.tmp/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+'/wsc_720p.jpg')
-        #imim.save(tmpfld+'/wsc_fullsize.jpg',"JPEG", quality=95)
-        imim.save(tmpfld+'/wsc_fullsize_tmp.jpg')
+        imim.save(tmpfld+'/wsc_fullsize_tmp.jpg',"JPEG", quality=int(q_fullsize))
+        #imim.save(tmpfld+'/wsc_fullsize_tmp.jpg')
         #imcv2.save(tmpfld+'/wsc_720p.jpg')
         #shutil.copy( tmpfld+'/wsc_720p.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_fullsize_tmp.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")

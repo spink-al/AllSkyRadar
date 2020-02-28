@@ -15,7 +15,7 @@ while read f ; do
     	fi
     elif [ ${f} == "restart" ] ; then
         if [ ${i} -gt 5 ] ; then
-    	    echo "bash "${MISC_FLDR}"/_ASR_720p_mp4_A.sh" | at -M now
+    	    echo "bash "${MISC_FLDR}"/_ASR_1080p_mp4_A.sh" | at -M now
 	    rm ${TMP_FLDR}/ASR.tmp/
     	    exit
     	fi

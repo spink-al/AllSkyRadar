@@ -17,6 +17,9 @@ import ephem
 import os
 import ASR_Conf
 
+tmpfld = ASR_Conf.TMP_FLDR
+miscfld = ASR_Conf.MISC_FLDR
+tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
 # lat/lon/alt defined outside in conf file ASR_Conf.py
 my_lat = ASR_Conf.MY_LAT
 my_lon = ASR_Conf.MY_LON

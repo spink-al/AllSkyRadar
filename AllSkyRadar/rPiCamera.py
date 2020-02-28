@@ -18,16 +18,16 @@ import os
 import ASR_Conf
 
 
-tmpfld = ASR_Conf.TMP_FLDR
-miscfld = ASR_Conf.MISC_FLDR
-tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+my_lat = ASR_Conf.MY_LAT
+my_lon = ASR_Conf.MY_LON
+my_alt = ASR_Conf.MY_ALT
 
 print("START 0: "+str(datetime.datetime.now()))
 
 gatech = ephem.Observer()
-gatech.lat = '52.4451'
-gatech.lon = '16.9535'
-gatech.elevation = 90
+gatech.lat = float(my_lat)
+gatech.lon = float(my_lon)
+gatech.elevation = int(my_alt)
 
 issline=[]
 

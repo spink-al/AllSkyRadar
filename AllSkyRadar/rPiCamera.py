@@ -25,8 +25,8 @@ my_alt = ASR_Conf.MY_ALT
 print("START 0: "+str(datetime.datetime.now()))
 
 gatech = ephem.Observer()
-gatech.lat = float(my_lat)
-gatech.lon = float(my_lon)
+gatech.lat = str(my_lat) # passed as float makes flip
+gatech.lon = str(my_lon) # passed as float makes flip
 gatech.elevation = int(my_alt)
 
 issline=[]

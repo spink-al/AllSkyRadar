@@ -17,7 +17,7 @@ import ephem
 import os
 import ASR_Conf
 
-
+# lat/lon/alt defined outside in conf file ASR_Conf.py
 my_lat = ASR_Conf.MY_LAT
 my_lon = ASR_Conf.MY_LON
 my_alt = ASR_Conf.MY_ALT

@@ -72,8 +72,8 @@ DataFileNameA5 = tmpfld+"/tmpconfA5"
 # Lens shading options for tests *maskaAntyFiol is a working solution atm
 DataFileNameA6 = tmpfld+"/tmpconfA6"
 # anti lens shading mask
-DataFileNameA7 = "/tmp/tmpconfA7"
-DataFileNameA8 = "/tmp/tmpconfA8"
+DataFileNameA7 = tmpfld+"/tmpconfA7"
+DataFileNameA8 = tmpfld+"/tmpconfA8"
 
 center_lim = 0 # wrong place for this var
 lewy_lim = 61 # wrong place for this var

@@ -15,6 +15,10 @@ import ephem
 from scipy.interpolate import interp1d
 import ASR_Conf
 
+my_lat = ASR_Conf.MY_LAT
+my_lon = ASR_Conf.MY_LON
+my_alt = ASR_Conf.MY_ALT
+
 tmpfld = ASR_Conf.TMP_FLDR
 miscfld = ASR_Conf.MISC_FLDR
 tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
@@ -43,9 +47,9 @@ for i, line in enumerate(tledata):
 my_camera = SkyCam('ZWO ASI178MC')
 
 gatech = ephem.Observer()
-gatech.lat = '52.4451'
-gatech.lon = '16.9535'
-gatech.elevation = 90
+gatech.lat = float(my_lat)
+gatech.lon = float(my_lon)
+gatech.elevation = int(my_alt)
 deg = u'\xb0'
 uus = u'\xb5s'
 jups = u"\u2643"

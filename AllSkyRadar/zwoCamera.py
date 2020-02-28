@@ -47,8 +47,8 @@ for i, line in enumerate(tledata):
 my_camera = SkyCam('ZWO ASI178MC')
 
 gatech = ephem.Observer()
-gatech.lat = float(my_lat)
-gatech.lon = float(my_lon)
+gatech.lat = str(my_lat) # passed as float makes flip
+gatech.lon = str(my_lon) # passed as float makes flip
 gatech.elevation = int(my_alt)
 deg = u'\xb0'
 uus = u'\xb5s'

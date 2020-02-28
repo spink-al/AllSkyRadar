@@ -75,10 +75,10 @@ DataFileNameA6 = tmpfld+"/tmpconfA6"
 DataFileNameA7 = "/tmp/tmpconfA7"
 DataFileNameA8 = "/tmp/tmpconfA8"
 
-center_lim = 0
-lewy_lim = 0
-prawy_lim = 0
-in_center = 0
+center_lim = 0 # wrong place for this var
+lewy_lim = 61 # wrong place for this var
+prawy_lim = 61 # wrong place for this var
+in_center = 0 # wrong place for this var
 
 datafileA7=open(DataFileNameA7, 'r')
 datazA7=datafileA7.readlines()
@@ -125,6 +125,7 @@ def rotate_around_point_highperf(in_center, x,y, radians, origin=(0, 0)):
     return qx, qy
 
 def distorsXY1(in_center,x,y):
+     # needs to be removed probably
     """
     xdoa1 = []
     ydob1 = []
@@ -171,6 +172,7 @@ def distorsXY1(in_center,x,y):
     return x1,y1	
 
 def distorsXY1a(x,y):
+    # unused
     global in_center
     global prawy_lim
     global lewy_lim
@@ -227,9 +229,9 @@ def distorsXY2(in_center,x,y):
     #global in_center
     #global prawy_lim
     #global lewy_lim
-    initX 	=	lewy_lim
+    initX 	=	lewy_lim # should be passed like in_center?!
     initY 	= 	20 
-    finalX 	= 	prawy_lim
+    finalX 	= 	prawy_lim # should be passed like in_center?!
     finalY 	= 	0 
 
     midX 	= 	float(finalX - initX) /2
@@ -237,7 +239,8 @@ def distorsXY2(in_center,x,y):
     midX 	= 	midX + initX
     midY 	= 	midY + initY
     midY 	= 	0 ## !!!
-
+    
+    # distorsion arguments trial and error
     k3 		= 	-0.000015
     Sy 		= 	-0.08
     Sx 		= 	0.03
@@ -245,7 +248,9 @@ def distorsXY2(in_center,x,y):
     #pD2 	= 	10
     W1 		= 	0.00004
     W2  	=	-0.0001
-
+    
+    # corrections for unleveled axis of rotation
+    # T1 = angle for which data should be rotated around virtual center of image 
     if (45 < int(in_center) <= 90):
         T1              =       -1.25
         V1              =       0.0006
@@ -286,7 +291,9 @@ def distorsXY2(in_center,x,y):
     Y_2 = nY**2
     X_2 = nX**2
     
-        
+    # some crazy math: 
+    # https://www.youtube.com/watch?v=PPAlDNlb2lw  
+    # https://www.youtube.com/watch?v=ppATGESg-Bw  
     rSrcY =  k3*nY*((X_2) + (Y_2)) + Sy*nY + ((X_2)*(V1)) + ((X_2)*(W1/(1/(nY+0.0001))))
     rSrcX =  k3*nX*((X_2) + (Y_2)) + Sx*nX +		    ((Y_2)*(W2/(1/(nX+0.0001))))
 
@@ -636,7 +643,7 @@ class AsyncWrite(threading.Thread):
         #imcv2 = cv2.cvtColor(imim, cv2.COLOR_BGRA2BGR)
         #cv2.imwrite(tmpfld+'/img1.jpg', imcv, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
 
-        # resize for on-the-fly mp4 
+        # resize for on-the-fly h264 compression
         imgHD = imim.resize((1280, 720), Image.LANCZOS)
 
 
@@ -652,12 +659,12 @@ class AsyncWrite(threading.Thread):
         if not dataz:
             last_time_fw = 'N/A'
 
-        overlay = "1"
-        spines_ovrl="1"
-        stars_ovrl="0"
+        overlay = "1" # 0 will disable overlay
+        spines_ovrl="1" 
+        stars_ovrl="0" # usefull for calibration of distortion
         if (overlay == "1"):
             alfa_trail=0.25
-            in_center = 260
+            in_center = 260 # azimuth in center of image
             center_lim=float(in_center)
         
             #print center_lim
@@ -666,8 +673,8 @@ class AsyncWrite(threading.Thread):
             top_lim=25 ##35 ##40 ##45
             bott_lim= -10 ##-5 ##0 ##5
 
-            lewy_lim=61
-            prawy_lim=61
+            lewy_lim=61 # probably redundant
+            prawy_lim=61 # probably redundant
             #lewy_lim=konw_a(center_lim)-lewy_lim+23
             #prawy_lim=konw_a(center_lim)+prawy_lim-23
             #axll=lewy_lim-24
@@ -675,6 +682,7 @@ class AsyncWrite(threading.Thread):
             #print in_center,dirname,filename
             #
             def konw_a(azimuth):
+                # there was a reason why def in here :/
                 global center_lim
                 #lon=335;
                 lewy_lim=55
@@ -688,7 +696,7 @@ class AsyncWrite(threading.Thread):
 
             lewy_lim=konw_a(center_lim)-lewy_lim
             prawy_lim=konw_a(center_lim)+prawy_lim
-            axll=lewy_lim#+2
+            axll=lewy_lim #+2
             axrl=prawy_lim
 
             #plt.ioff()
@@ -699,14 +707,14 @@ class AsyncWrite(threading.Thread):
             ##########################################################################
             #ax = plt(figsize=(19.20, 10.40))
             
-            plt = Figure(figsize=(12.80, 7.20))
+            plt = Figure(figsize=(12.80, 7.20)) # 1280x720px
             plt.patch.set_alpha(0)
             canvas = FigureCanvasAgg(plt)
             ax = plt.add_subplot(111)#, facecolor='#ff0000')  # create figure & 1 axis
             ax.patch.set_alpha(0)
 
 
-
+            # correction up/down for unleveled axis of rotation
             if (45 < int(in_center) <= 90):
                 axtl=-1.5 ##-3
                 axbl=52.25 ##58
@@ -867,7 +875,7 @@ class AsyncWrite(threading.Thread):
             #ax.plot(konw_a(81),3,'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3) 
             #ax.plot(konw_a(112),3,'o',markersize=35, markerfacecolor='gray', markeredgecolor='none', alpha=0.3) 
             #ax.plot(konw_a(113.3),2.4,'o',markersize=15, markerfacecolor='none', markeredgecolor='black', alpha=0.3) 
-            
+            # My orientation points on horizon, chimneys, cranes, etc. for calibration:
             orientacyjne= [
             [12,        1.5        ],
             [27,	1.5	],
@@ -1161,11 +1169,13 @@ class AsyncWrite(threading.Thread):
                                     if ((plane_pos_len-1) > i > 0):
                                         if aazs[i] > lewy_lim-23 and aazs[i] < prawy_lim+23: 
                                             alpha_hist = round(1/float(plane_pos_len/float(i)),2)
+                                            # this is cool with blending trails, but time cost is crazy with ax.plot in loop
                                             #ax.plot((aazs[i-1],aazs[i]),(elevis[i-1], elevis[i]),'-',markersize=10, color=fontb['color'], lw=1, alpha=(alpha_hist/2))
                                     else:
                                         alpha_hist = 1
                                     tmp_i = i
                             #ax.plot(aaz1a,ele1a,'o',markersize=3, color=fontb['color'],alpha=alfa_trail)
+                            # this is less cool, because I can't pass alpha as array, but much faster:
                             ax.plot((aazs[0:tmp_i+1]),(elevis[0:tmp_i+1]),'-',markersize=10, color=fontb['color'], lw=1, alpha=0.6)
 
                         #ax.plot(aazs,elevis,'o',markersize=5, color=fontb['color'], lw=1.5,alpha=0.3) 

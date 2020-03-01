@@ -9,7 +9,9 @@ https://github.com/spink-al/picamera
 
 https://github.com/spink-al/zwo-skycam
 
-for use of misc/_schedule.sh 
+for use of misc/_schedule.sh you need sunwait and a line in crontab:
+
+6 0 * * * /bin/bash /home/pi/AllSkyRadar/misc/_schedule.sh
 
 https://github.com/risacher/sunwait
 

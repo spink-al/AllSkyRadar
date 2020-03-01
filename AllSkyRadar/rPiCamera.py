@@ -42,9 +42,10 @@ d_wb1       = WSC_Conf.d_wb1
 d_wb2       = WSC_Conf.d_wb2
 n_wb1       = WSC_Conf.n_wb1
 n_wb2       = WSC_Conf.n_wb2
+landmarks_ovrl = WSC_Conf.landmarks_ovrl
 
-print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
-print(cam_azimuth)
+#print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+#print(cam_azimuth)
 
 
 tmpfld = ASR_Conf.TMP_FLDR
@@ -406,6 +407,7 @@ def read_conf():
     global d_wb2
     global n_wb1
     global n_wb2
+    global landmarks_ovrl
     
     importlib.reload(WSC_Conf)
     
@@ -432,8 +434,10 @@ def read_conf():
     d_wb2       = WSC_Conf.d_wb2
     n_wb1       = WSC_Conf.n_wb1
     n_wb2       = WSC_Conf.n_wb2
+    landmarks_ovrl = WSC_Conf.landmarks_ovrl
 
 def cap_d():
+    
     global w_resize
     global h_resize
     global q_resize
@@ -452,8 +456,8 @@ def cap_d():
     global d_wb2
     global n_wb1
     global n_wb2
-
-
+    global landmarks_ovrl
+    just_started = 1
     # a bit lower resolution than max, because @max likes to hang
     camera = picamera.PiCamera(resolution=(3104, 2304), sensor_mode=3)
     #camera.isp_blocks -= {'gamma'}
@@ -534,8 +538,8 @@ def cap_d():
     while True:
         read_conf()
 
-        print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
-        print(cam_azimuth)
+        #print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+        #print(cam_azimuth)
 
         # exposure read from file
         datafile0=open(DataFileName0, 'r')
@@ -601,30 +605,39 @@ def cap_d():
 
         if isday > 0:
             camera.awb_gains = (float(d_wb1), float(d_wb2))
-            print("awb day",float(d_wb1), float(d_wb2))
+            print("wb day",float(d_wb1), float(d_wb2))
         else:
             camera.awb_gains = (float(n_wb1), float(n_wb2))
-            print("awb nite",float(n_wb1), float(n_wb2))
+            print("wb night",float(n_wb1), float(n_wb2))
         #camera.awb_gains = (1.7, 1.7)
 
         try:
             # above reset lvl 1, below reset lvl 0 (conf read every time from /tmp/.../tmpconf*)
             while True:
-                stream.truncate()
-                stream.seek(0)
+                ###### testing atm, img vs capture parameters sync while async oO  ###### 
+                if just_started == 0:
+                    stream.truncate()
+                    stream.seek(0)
+                    data = np.frombuffer(stream.getvalue(), dtype=np.uint8)
+                    background = AsyncWrite(data, pass_aktual_t_f, pass_exposure, pass_iso, pass_mono)
+                    background.start()
+                    if (exposure2 < 5):
+                        diff1 = 5-exposure2
+                        print("Diff: "+str(diff1)+"s")
+                        time.sleep(diff1)
+                else:
+                    just_started = 0
 
-                camera.capture(stream, format='jpeg')
                 aktual_t = datetime.datetime.now()
-                aktual_t_f = aktual_t.strftime("%Y%m%d_%H%M%S")
-                data = np.frombuffer(stream.getvalue(), dtype=np.uint8)
-                background = AsyncWrite(data, aktual_t_f, exposure1, iso1, mono)
-                background.start()
+                pass_aktual_t_f = aktual_t.strftime("%Y%m%d_%H%M%S")
+                pass_exposure = exposure1
+                pass_iso = iso1
+                pass_mono = mono
+                ##################################### 
+                camera.capture(stream, format='jpeg')
+
                 print("S: ", str(datetime.datetime.now()), str(exposure1), str(iso1))
-                
-                if (exposure2 < 5):
-                    diff1 = 5-exposure2
-                    print("Diff: "+str(diff1)+"s")                
-                    time.sleep(diff1)
+
 
                 datafile0=open(DataFileName0, 'r')
                 dataz0=datafile0.readlines()
@@ -638,7 +651,6 @@ def cap_d():
                 if not (float(dataz1[0]) == iso1):
                     break
 
-    
                 status1 = read_status()
                 if int(status1) == 1:
                     with open(DataFileName9,'w') as tsttxt:
@@ -689,9 +701,9 @@ class AsyncWrite(threading.Thread):
         global lewy_lim
         #import WSC_Conf
 
-        datafile2=open(DataFileName2, 'r')
-        dataz2=datafile2.readlines()
-        datafile2.close()
+        #datafile2=open(DataFileName2, 'r')
+        #dataz2=datafile2.readlines()
+        #datafile2.close()
 
         datafile2=open(DataFileName2, 'r')
         dataz2=datafile2.readlines()
@@ -733,7 +745,7 @@ class AsyncWrite(threading.Thread):
         font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 24)
         draw.rectangle(((10,1650,950,1735   ))                                          ,(0,0,0,10))
 
-        draw.text((15,1650 ), "WideSky v10.20200221"                                    ,(100,100,100),font=font)
+        draw.text((15,1650 ), "WideSky v10.20200229"                                    ,(100,100,100),font=font)
         draw.text((410,1650      ), str(self.exposure/1000000)+"s"                      ,(100,100,100),font=font)
         draw.text((410,1675 ), str(self.exposure)+uus                                   ,(100,100,100),font=font)
         
@@ -768,7 +780,7 @@ class AsyncWrite(threading.Thread):
         #spines_ovrl="1" 
         #stars_ovrl="0" # usefull for calibration of distortion
 
-        landmarks_ovrl = "0"
+        #landmarks_ovrl = "0"
         if (overlay == "1"):
             alfa_trail=0.25
             in_center = int(cam_azimuth) # azimuth in center of image
@@ -988,7 +1000,7 @@ class AsyncWrite(threading.Thread):
             #ax.plot(konw_a(113.3),2.4,'o',markersize=15, markerfacecolor='none', markeredgecolor='black', alpha=0.3) 
             # My orientation points on horizon, chimneys, cranes, etc. for calibration:
             if landmarks_ovrl == "1":
-                orientacyjne= [
+                landmarks= [
                 [12,        1.5        ],
                 [27,	1.5	],
                 [65,	1.2	],
@@ -1003,7 +1015,7 @@ class AsyncWrite(threading.Thread):
                 [341, 	8	],
                 [354,	7.5	]]
                 
-                for i in orientacyjne:
+                for i in landmarks:
                     if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
                         x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
                         x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
@@ -1270,6 +1282,7 @@ class AsyncWrite(threading.Thread):
                                     ax.plot(tst_x,tst_y,'--',markersize=10, color='blue', lw=1,alpha=0.2)
                         ############################## transits preview END ###
                         ######### start traili 
+                        '''
                         tmp_i = 0
                         if not plane_dict[15].strip() == '':
                             words1 = plane_dict[15]
@@ -1305,6 +1318,7 @@ class AsyncWrite(threading.Thread):
                         #ax.plot(aazs,elevis,'-',markersize=5, color='white', lw=1.5,alpha=0.3) 
                         #ax.plot(aazs,elevis,'-',markersize=5, color=fontb['color'], lw=1,alpha=0.3) 
                         #########koniec traili 
+                        '''
             # if iss_ovrl        == "1" 
             iss=ephem.readtle(issline[0], issline[1], issline[2])
             iss.compute(gatech)
@@ -1340,7 +1354,7 @@ class AsyncWrite(threading.Thread):
 
             #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
             ####print iss_elevis
-        
+
             gatech.date = ephem.now() #RESET!
             #ax.plot(float(in_center),15,'+',markersize=5, color='darkgreen', alpha=1)
             # if calibration2_ovrl        == "1" # 2nd lvl which part below? 2nd lvl - preview of distortion grid "hellraiser" stuff 

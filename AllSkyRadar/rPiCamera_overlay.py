@@ -15,9 +15,46 @@ from matplotlib.figure import Figure
 import math
 import ephem
 import os
+import importlib
 import ASR_Conf
+import WSC_Conf
+
+w_resize = WSC_Conf.w_resize
+h_resize = WSC_Conf.h_resize
+q_resize = WSC_Conf.q_resize
+q_fullsize = WSC_Conf.q_fullsize
+
+cam_azimuth  = WSC_Conf.cam_azimuth
+
+crop_x = WSC_Conf.crop_x
+crop_y = WSC_Conf.crop_y
+crop_w = WSC_Conf.crop_w
+crop_h = WSC_Conf.crop_h
+
+overlay     = WSC_Conf.overlay
+spines_ovrl = WSC_Conf.spines_ovrl
+stars_ovrl  = WSC_Conf.stars_ovrl
+iss_ovrl  = WSC_Conf.iss_ovrl
+
+h_flip      = WSC_Conf.h_flip
+v_flip      = WSC_Conf.v_flip
+
+d_wb1       = WSC_Conf.d_wb1
+d_wb2       = WSC_Conf.d_wb2
+n_wb1       = WSC_Conf.n_wb1
+n_wb2       = WSC_Conf.n_wb2
+
+landmarks_ovrl = WSC_Conf.landmarks_ovrl
+
+#print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+#print(cam_azimuth)
 
 
+tmpfld = ASR_Conf.TMP_FLDR
+miscfld = ASR_Conf.MISC_FLDR
+
+
+# lat/lon/alt defined outside in conf file ASR_Conf.py
 my_lat = ASR_Conf.MY_LAT
 my_lon = ASR_Conf.MY_LON
 my_alt = ASR_Conf.MY_ALT
@@ -25,19 +62,20 @@ my_alt = ASR_Conf.MY_ALT
 print("START 0: "+str(datetime.datetime.now()))
 
 gatech = ephem.Observer()
-gatech.lat = float(my_lat)
-gatech.lon = float(my_lon)
+gatech.lat = str(my_lat) # passed as float makes flip
+gatech.lon = str(my_lon) # passed as float makes flip
 gatech.elevation = int(my_alt)
 
-issline=[]
+if iss_ovrl == "1":
+    issline=[]
+    tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+    tlefile=open(tleFileName, 'r')
+    tledata=tlefile.readlines()
+    tlefile.close()
 
-tlefile=open(tleFileName, 'r')
-tledata=tlefile.readlines()
-tlefile.close()
-
-for i, line in enumerate(tledata):
-    if "ISS" in line: 
-        for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
+    for i, line in enumerate(tledata):
+        if "ISS" in line: 
+            for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
 
 #print(tledata)
 deg = u'\xb0'
@@ -72,13 +110,13 @@ DataFileNameA5 = tmpfld+"/tmpconfA5"
 # Lens shading options for tests *maskaAntyFiol is a working solution atm
 DataFileNameA6 = tmpfld+"/tmpconfA6"
 # anti lens shading mask
-DataFileNameA7 = "/tmp/tmpconfA7"
-DataFileNameA8 = "/tmp/tmpconfA8"
+DataFileNameA7 = tmpfld+"/tmpconfA7"
+DataFileNameA8 = tmpfld+"/tmpconfA8"
 
-center_lim = 0
-lewy_lim = 0
-prawy_lim = 0
-in_center = 0
+center_lim = 0 # wrong place for this var
+lewy_lim = 61 # wrong place for this var
+prawy_lim = 61 # wrong place for this var
+in_center = 0 # wrong place for this var
 
 datafileA7=open(DataFileNameA7, 'r')
 datazA7=datafileA7.readlines()
@@ -125,6 +163,7 @@ def rotate_around_point_highperf(in_center, x,y, radians, origin=(0, 0)):
     return qx, qy
 
 def distorsXY1(in_center,x,y):
+     # needs to be removed probably
     """
     xdoa1 = []
     ydob1 = []
@@ -171,9 +210,10 @@ def distorsXY1(in_center,x,y):
     return x1,y1	
 
 def distorsXY1a(x,y):
-    global in_center
-    global prawy_lim
-    global lewy_lim
+    # unused normaly, there is commented part of code which adds another distortion layer for comparison 
+    #global in_center
+    #global prawy_lim
+    #global lewy_lim
     """
     xdoa1 = []
     ydob1 = []
@@ -224,20 +264,21 @@ def distorsXY1a(x,y):
 
 
 def distorsXY2(in_center,x,y):
-    #global in_center
-    #global prawy_lim
-    #global lewy_lim
-    initX 	=	lewy_lim
+    #
+    #
+    #
+    initX 	=	lewy_lim # should be passed like in_center?!
     initY 	= 	20 
-    finalX 	= 	prawy_lim
+    finalX 	= 	prawy_lim # should be passed like in_center?!
     finalY 	= 	0 
-
+    #print(lewy_lim)
     midX 	= 	float(finalX - initX) /2
     midY 	= 	float(finalY - initY) /2
     midX 	= 	midX + initX
     midY 	= 	midY + initY
     midY 	= 	0 ## !!!
-
+    
+    # distorsion arguments trial and error
     k3 		= 	-0.000015
     Sy 		= 	-0.08
     Sx 		= 	0.03
@@ -245,7 +286,9 @@ def distorsXY2(in_center,x,y):
     #pD2 	= 	10
     W1 		= 	0.00004
     W2  	=	-0.0001
-
+    
+    # corrections for unleveled axis of rotation
+    # T1 = angle for which data should be rotated around virtual center of image 
     if (45 < int(in_center) <= 90):
         T1              =       -1.25
         V1              =       0.0006
@@ -286,7 +329,9 @@ def distorsXY2(in_center,x,y):
     Y_2 = nY**2
     X_2 = nX**2
     
-        
+    # some crazy math: 
+    # https://www.youtube.com/watch?v=PPAlDNlb2lw  
+    # https://www.youtube.com/watch?v=ppATGESg-Bw  
     rSrcY =  k3*nY*((X_2) + (Y_2)) + Sy*nY + ((X_2)*(V1)) + ((X_2)*(W1/(1/(nY+0.0001))))
     rSrcX =  k3*nX*((X_2) + (Y_2)) + Sx*nX +		    ((Y_2)*(W2/(1/(nX+0.0001))))
 
@@ -346,7 +391,93 @@ def npz_w(npz, arr):
             #print(str(data)+"\n")
             tsttxt.write(str(data))
 
+
+def read_conf():
+    global w_resize
+    global h_resize
+    global q_resize
+    global q_fullsize
+    global cam_azimuth
+    global crop_x
+    global crop_y
+    global crop_w
+    global crop_h
+    global overlay
+    global spines_ovrl
+    global stars_ovrl
+    global h_flip
+    global v_flip
+    global d_wb1
+    global d_wb2
+    global n_wb1
+    global n_wb2
+    global landmarks_ovrl
+    global iss_ovrl
+    global issline
+
+    importlib.reload(WSC_Conf)
+
+    w_resize = WSC_Conf.w_resize
+    h_resize = WSC_Conf.h_resize
+    q_resize = WSC_Conf.q_resize
+    q_fullsize = WSC_Conf.q_fullsize
+
+    cam_azimuth  = WSC_Conf.cam_azimuth
+
+    crop_x = WSC_Conf.crop_x
+    crop_y = WSC_Conf.crop_y
+    crop_w = WSC_Conf.crop_w
+    crop_h = WSC_Conf.crop_h
+
+    overlay     = WSC_Conf.overlay
+    spines_ovrl = WSC_Conf.spines_ovrl
+    stars_ovrl  = WSC_Conf.stars_ovrl
+    h_flip      = WSC_Conf.h_flip
+    v_flip      = WSC_Conf.v_flip
+    # = WSC_Conf.
+
+    d_wb1       = WSC_Conf.d_wb1
+    d_wb2       = WSC_Conf.d_wb2
+    n_wb1       = WSC_Conf.n_wb1
+    n_wb2       = WSC_Conf.n_wb2
+    landmarks_ovrl = WSC_Conf.landmarks_ovrl
+
+    if iss_ovrl == "1":
+        issline=[]
+        tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+        tlefile=open(tleFileName, 'r')
+        tledata=tlefile.readlines()
+        tlefile.close()
+
+        for i, line in enumerate(tledata):
+            if "ISS" in line: 
+                for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
+
 def cap_d():
+
+    global w_resize
+    global h_resize
+    global q_resize
+    global q_fullsize
+    global cam_azimuth
+    global crop_x
+    global crop_y
+    global crop_w
+    global crop_h
+    global overlay
+    global spines_ovrl
+    global stars_ovrl
+    global h_flip
+    global v_flip
+    global d_wb1
+    global d_wb2
+    global n_wb1
+    global n_wb2
+    global landmarks_ovrl
+    global iss_ovrl
+    global issline
+
+    just_started = 1
     # a bit lower resolution than max, because @max likes to hang
     camera = picamera.PiCamera(resolution=(3104, 2304), sensor_mode=3)
     #camera.isp_blocks -= {'gamma'}
@@ -355,7 +486,9 @@ def cap_d():
     datazA6=datafileA6.readlines()
     datafileA6.close()
     zerocust = int(str(datazA6[0]))
-    
+    camera.hflip=int(h_flip)
+    camera.vflip=int(v_flip)
+
     # lens shading, don't touch, using mask atm
     if zerocust == -1:
         pass
@@ -421,8 +554,13 @@ def cap_d():
         #lst[2][...] = 32
         lst[0][...] = 30
         camera.lens_shading_table=lst
-        
+    # above reset lvl 2, below reset lvl 1
     while True:
+        read_conf()
+
+        #print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
+        #print(cam_azimuth)
+
         # exposure read from file
         datafile0=open(DataFileName0, 'r')
         dataz0=datafile0.readlines()
@@ -438,13 +576,13 @@ def cap_d():
         datafileA3=open(DataFileNameA3, 'r')
         datazA3=datafileA3.readlines()
         datafileA3.close()
-        
+
         mono = int(str(datazA3[0]))
         if mono > 0:
             camera.color_effects = (128,128)
         else:
             camera.color_effects = None 
-    	    
+
         exposure1 = int(str(dataz0[0]))
         exposure2 = exposure1/1000000
 
@@ -456,14 +594,12 @@ def cap_d():
         else:
             framerate1 = 30.0
 
-        camera.hflip=1
-        camera.vflip=1
 
         camera.shutter_speed = exposure1
         datafile1=open(DataFileName1, 'r')
         dataz1=datafile1.readlines()
         datafile1.close()
-        
+
         iso1 = float(str(dataz1[0]))
         #print(iso1)
         #camera.iso = 0 #???????
@@ -475,45 +611,53 @@ def cap_d():
         camera.awb_mode = 'off'
 
         # wb1 read from file        
-        datafileA4=open(DataFileNameA4, 'r')
-        datazA4=datafileA4.readlines()
-        datafileA4.close()
+        #datafileA4=open(DataFileNameA4, 'r')
+        #datazA4=datafileA4.readlines()
+        #datafileA4.close()
 
         # wb2 read from file        
-        datafileA5=open(DataFileNameA5, 'r')
-        datazA5=datafileA5.readlines()
-        datafileA5.close()
-        
+        #datafileA5=open(DataFileNameA5, 'r')
+        #datazA5=datafileA5.readlines()
+        #datafileA5.close()
+
         # inactive, below isday 0/1 overrides
-        camera.awb_gains = (float(datazA4[0]), float(datazA5[0]))
-        
-        #print("a")
-        
+        #camera.awb_gains = (float(datazA4[0]), float(datazA5[0]))
+
         if isday > 0:
-            camera.awb_gains = (1.7, 1.4)
-            print("awb day")
+            camera.awb_gains = (float(d_wb1), float(d_wb2))
+            print("wb day",float(d_wb1), float(d_wb2))
         else:
-            camera.awb_gains = (1.2, 2.0)
-            print("awb nite")
+            camera.awb_gains = (float(n_wb1), float(n_wb2))
+            print("wb night",float(n_wb1), float(n_wb2))
         #camera.awb_gains = (1.7, 1.7)
 
         try:
+            # above reset lvl 1, below reset lvl 0 (conf read every time from /tmp/.../tmpconf*)
             while True:
-                stream.truncate()
-                stream.seek(0)
+                ###### testing atm, img vs capture parameters sync while async oO  ###### 
+                if just_started == 0:
+                    stream.truncate()
+                    stream.seek(0)
+                    data = np.frombuffer(stream.getvalue(), dtype=np.uint8)
+                    background = AsyncWrite(data, pass_aktual_t_f, pass_exposure, pass_iso, pass_mono)
+                    background.start()
+                    if (exposure2 < 5):
+                        diff1 = 5-exposure2
+                        print("Diff: "+str(diff1)+"s")
+                        time.sleep(diff1)
+                else:
+                    just_started = 0
 
-                camera.capture(stream, format='jpeg')
                 aktual_t = datetime.datetime.now()
-                aktual_t_f = aktual_t.strftime("%Y%m%d_%H%M%S")
-                data = np.frombuffer(stream.getvalue(), dtype=np.uint8)
-                background = AsyncWrite(data, aktual_t_f, exposure1, iso1, str(datazA4[0]), str(datazA5[0]), mono)
-                background.start()
+                pass_aktual_t_f = aktual_t.strftime("%Y%m%d_%H%M%S")
+                pass_exposure = exposure1
+                pass_iso = iso1
+                pass_mono = mono
+                ##################################### 
+                camera.capture(stream, format='jpeg')
+
                 print("S: ", str(datetime.datetime.now()), str(exposure1), str(iso1))
-                
-                if (exposure2 < 5):
-                    diff1 = 5-exposure2
-                    print("Diff: "+str(diff1)+"s")                
-                    time.sleep(diff1)
+
 
                 datafile0=open(DataFileName0, 'r')
                 dataz0=datafile0.readlines()
@@ -527,7 +671,6 @@ def cap_d():
                 if not (float(dataz1[0]) == iso1):
                     break
 
-    
                 status1 = read_status()
                 if int(status1) == 1:
                     with open(DataFileName9,'w') as tsttxt:
@@ -556,13 +699,13 @@ def cap_d():
 
 
 class AsyncWrite(threading.Thread):
-    def __init__(self, data, aktual_t_f, exposure, iso, a4, a5, mono):
+    def __init__(self, data, aktual_t_f, exposure, iso, mono):
         threading.Thread.__init__(self)
         self.data = data
         self.iso = iso # analog gain float
         self.mono = int(mono)
-        self.a4 = float(a4)
-        self.a5 = float(a5)        
+        #self.a4 = float(a4)
+        #self.a5 = float(a5)        
         self.exposure = exposure
         self.aktual_t_f = aktual_t_f
 
@@ -576,10 +719,11 @@ class AsyncWrite(threading.Thread):
         global center_lim
         global prawy_lim
         global lewy_lim
+        #import WSC_Conf
 
-        datafile2=open(DataFileName2, 'r')
-        dataz2=datafile2.readlines()
-        datafile2.close()
+        #datafile2=open(DataFileName2, 'r')
+        #dataz2=datafile2.readlines()
+        #datafile2.close()
 
         datafile2=open(DataFileName2, 'r')
         dataz2=datafile2.readlines()
@@ -597,8 +741,8 @@ class AsyncWrite(threading.Thread):
         #imagef = cv2.flip(image, -1)
         
         # crop via cv2 to 16:9 upper part of the image from 3104x2308 -> 3104x1746 bigger
-        q0Ax = 0 ; q0Ay = 0
-        im = image[q0Ax:q0Ax+1746, q0Ay:q0Ay+3104]
+        #q0Ax = 0 ; q0Ay = 0
+        im = image[int(crop_y):int(crop_y)+int(crop_h), int(crop_x):int(crop_x)+int(crop_w)]
         
         
         #ocvi = im.astype(np.single)
@@ -621,13 +765,13 @@ class AsyncWrite(threading.Thread):
         font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 24)
         draw.rectangle(((10,1650,950,1735   ))                                          ,(0,0,0,10))
 
-        draw.text((15,1650 ), "WideSky v10.20200221"                                    ,(100,100,100),font=font)
+        draw.text((15,1650 ), "WideSky v10.20200229"                                    ,(100,100,100),font=font)
         draw.text((410,1650      ), str(self.exposure/1000000)+"s"                      ,(100,100,100),font=font)
         draw.text((410,1675 ), str(self.exposure)+uus                                   ,(100,100,100),font=font)
         
         draw.text((15,1675 ), str(self.aktual_t_f)                                      ,(100,100,100),font=font)
         draw.text((15,1700 ), "ag: "+str(self.iso)+" dg: "+"1,0*"                       ,(100,100,100),font=font)
-        draw.text((410,1700 ), "wb "+str(self.a4)+" "+str(self.a5)                      ,(100,100,100),font=font)
+        #draw.text((410,1700 ), "wb "+str(self.a4)+" "+str(self.a5)                      ,(100,100,100),font=font)
 
         draw.text((660,1650 ), " Min: "+str(dataz3[0])                                  ,(100,100,100),font=font)
         draw.text((660,1675 ), " Br: "  +str(test_br)                                     ,(100,100,100),font=font)
@@ -636,8 +780,8 @@ class AsyncWrite(threading.Thread):
         #imcv2 = cv2.cvtColor(imim, cv2.COLOR_BGRA2BGR)
         #cv2.imwrite(tmpfld+'/img1.jpg', imcv, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
 
-        # resize for on-the-fly mp4 
-        imgHD = imim.resize((1280, 720), Image.LANCZOS)
+        # resize for on-the-fly h264 compression
+        imgHD = imim.resize((int(w_resize), int(h_resize)), Image.LANCZOS)
 
 
         ###############################################################################################################
@@ -652,12 +796,14 @@ class AsyncWrite(threading.Thread):
         if not dataz:
             last_time_fw = 'N/A'
 
-        overlay = "1"
-        spines_ovrl="1"
-        stars_ovrl="0"
+        #overlay = "1" # 0 will disable overlay
+        #spines_ovrl="1" 
+        #stars_ovrl="0" # usefull for calibration of distortion
+
+        #landmarks_ovrl = "0"
         if (overlay == "1"):
             alfa_trail=0.25
-            in_center = 260
+            in_center = int(cam_azimuth) # azimuth in center of image
             center_lim=float(in_center)
         
             #print center_lim
@@ -666,14 +812,15 @@ class AsyncWrite(threading.Thread):
             top_lim=25 ##35 ##40 ##45
             bott_lim= -10 ##-5 ##0 ##5
 
-            lewy_lim=61
-            prawy_lim=61
+            lewy_lim=61 # probably redundant
+            prawy_lim=61 # probably redundant
             #lewy_lim=konw_a(center_lim)-lewy_lim+23
             #prawy_lim=konw_a(center_lim)+prawy_lim-23
             #axll=lewy_lim-24
             #axrl=prawy_lim+21
             #print in_center,dirname,filename
-            #
+
+            # there was a reason why def in here :/
             def konw_a(azimuth):
                 global center_lim
                 #lon=335;
@@ -688,7 +835,7 @@ class AsyncWrite(threading.Thread):
 
             lewy_lim=konw_a(center_lim)-lewy_lim
             prawy_lim=konw_a(center_lim)+prawy_lim
-            axll=lewy_lim#+2
+            axll=lewy_lim #+2
             axrl=prawy_lim
 
             #plt.ioff()
@@ -698,21 +845,21 @@ class AsyncWrite(threading.Thread):
             #### add to .config/matplotlib/matplotlibrc line backend : Agg !!! ###
             ##########################################################################
             #ax = plt(figsize=(19.20, 10.40))
-            
-            plt = Figure(figsize=(12.80, 7.20))
+
+            plt = Figure(figsize=(float(w_resize)/100, float(h_resize)/100)) # WSC_Conf.py
             plt.patch.set_alpha(0)
             canvas = FigureCanvasAgg(plt)
             ax = plt.add_subplot(111)#, facecolor='#ff0000')  # create figure & 1 axis
             ax.patch.set_alpha(0)
 
 
-
+            # correction up/down for unleveled axis of rotation
             if (45 < int(in_center) <= 90):
                 axtl=-1.5 ##-3
                 axbl=52.25 ##58
             elif (90 < int(in_center) <= 135):
-                axtl= -2.0 #-2.5  ##-3
-                axbl= 51.75 #52.25 ##58
+                axtl= -3.0  ##-3
+                axbl= 52.75 ##58
             elif (135 < int(in_center) <= 160):
                 axtl=-2.75 ##-3
                 axbl=54.0 ##
@@ -751,12 +898,14 @@ class AsyncWrite(threading.Thread):
             
             fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }        
             vert_alX=str('top') ; hori_alX=str('center')    
+            
+            # if calibration1_ovrl        == "1" # calibration ovrl 1st lvl - just +++ on horizon curve
             for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
                 x1,y1 = distorsXY1(in_center,x,0)
                 ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
                 ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
         
-            #dol‚-gora limity
+            #dolĂ˘â‚¬Ĺˇ-gora limity
             #ax.set_ylim(0,55)        
             #ax.set_xticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
             #ax.set_yticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
@@ -780,6 +929,7 @@ class AsyncWrite(threading.Thread):
                     ax.spines['left'].set_visible(False)
                     ax.tick_params(axis='y', which='major', labelsize=8, labelcolor='none',color='none')#,direction='in')
                     ax.tick_params(axis='x', which='major', labelsize=8, labelcolor='none',color='none')#,direction='in')
+            
             #plt.tick_params(axis='y', which='major', labelsize=8, labelcolor='#ffffff',direction='in')
             #plt.tick_params(axis='x', which='major', labelsize=8, labelcolor='#ffffff',direction='in')
             #plt.setp(ax.get_xticklabels(), rotation='vertical', fontsize=14)
@@ -803,6 +953,7 @@ class AsyncWrite(threading.Thread):
                 lista_s=['Acamar', 'Achernar', 'Acrux', 'Adara', 'Adhara', 'Agena', 'Albereo', 'Alcaid', 'Alcor', 'Alcyone', 'Aldebaran', 'Alderamin', 'Alfirk', 'Algenib', 'Algieba', 'Algol', 'Alhena', 'Alioth', 'Alkaid', 'Almach', 'Alnair', 'Alnilam', 'Alnitak', 'Alphard', 'Alphecca', 'Alpheratz', 'Alshain', 'Altair', 'Ankaa', 'Antares', 'Arcturus', 'Arkab Posterior', 'Arkab Prior', 'Arneb', 'Atlas', 'Atria', 'Avior', 'Bellatrix', 'Betelgeuse', 'Canopus', 'Capella', 'Caph', 'Castor', 'Cebalrai', 'Deneb', 'Denebola', 'Diphda', 'Dubhe', 'Electra', 'Elnath', 'Eltanin', 'Enif', 'Etamin', 'Fomalhaut', 'Formalhaut', 'Gacrux', 'Gienah', 'Gienah Corvi', 'Hadar', 'Hamal', 'Izar', 'Kaus Australis', 'Kochab', 'Maia', 'Markab', 'Megrez', 'Menkalinan', 'Menkar', 'Menkent', 'Merak', 'Merope', 'Miaplacidus', 'Mimosa', 'Minkar', 'Mintaka', 'Mirach', 'Mirfak', 'Mirzam', 'Mizar', 'Naos', 'Nihal', 'Nunki', 'Peacock', 'Phecda', 'Polaris', 'Pollux', 'Procyon', 'Rasalgethi', 'Rasalhague', 'Regulus', 'Rigel', 'Rigil Kentaurus', 'Rukbat', 'Sabik', 'Sadalmelik', 'Sadr', 'Saiph', 'Scheat', 'Schedar', 'Shaula', 'Sheliak', 'Sirius', 'Sirrah', 'Spica', 'Suhail', 'Sulafat', 'Tarazed', 'Taygeta', 'Thuban', 'Unukalhai', 'Vega', 'Vindemiatrix', 'Wezen', 'Zaurak', 'Zubenelgenubi']
                 for star in lista_s:
                     v = ephem.star(star)
+                    # v = ephem.star(lista_s) # will it work on arr/dict without loop?
                     v.compute(gatech)
                         #ax.plot(konw_a(round(math.degrees(v.az), 1)),round(math.degrees(v.alt),1),'o',markersize=15, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3) 
                     #ax.text(konw_a(round(math.degrees(v.az), 1)),(round(math.degrees(v.alt), 1)), ' \n'+str(star)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
@@ -867,33 +1018,35 @@ class AsyncWrite(threading.Thread):
             #ax.plot(konw_a(81),3,'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3) 
             #ax.plot(konw_a(112),3,'o',markersize=35, markerfacecolor='gray', markeredgecolor='none', alpha=0.3) 
             #ax.plot(konw_a(113.3),2.4,'o',markersize=15, markerfacecolor='none', markeredgecolor='black', alpha=0.3) 
-            
-            orientacyjne= [
-            [12,        1.5        ],
-            [27,	1.5	],
-            [65,	1.2	],
-            [113,	3.4	],
-            [189,	5	],
-            [164,	12	],
-            [162,	6	],
-            [253,	6	],
-            [295.5,	1.5	],
-            [320,	1.5	],
-            [329,	6	],
-            [341, 	8	],
-            [354,	7.5	]]
-            
-            for i in orientacyjne:
-                if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
-                    x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
-                    x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
-                    #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
-                    ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
-                    ax.plot([konw_a(x),konw_a(x1)],[y,y1],'-',markersize=15, lw=2,color='yellow', alpha=0.3)
+            # My orientation points on horizon, chimneys, cranes, etc. for calibration:
+            if landmarks_ovrl == "1":
+                landmarks= [
+                [12,        1.5        ],
+                [27,	1.5	],
+                [65,	1.2	],
+                [113,	3.4	],
+                [189,	5	],
+                [164,	12	],
+                [162,	6	],
+                [253,	6	],
+                [295.5,	1.5	],
+                [320,	1.5	],
+                [329,	6	],
+                [341, 	8	],
+                [354,	7.5	]]
+                
+                for i in landmarks:
+                    if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
+                        x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
+                        x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
+                        #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                        ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                        ax.plot([konw_a(x),konw_a(x1)],[y,y1],'-',markersize=15, lw=2,color='yellow', alpha=0.3)
                     
             #print i
             
-            plt.subplots_adjust(left=0.0, bottom=0.13, right=1.0, top=1.0)
+            # there is another way above, search for: "correction up/down for unleveled axis of rotation"
+            plt.subplots_adjust(left=0.0, bottom=0.1, right=1.0, top=1.0)
 
         
             for i,line in enumerate(dataz):
@@ -924,6 +1077,8 @@ class AsyncWrite(threading.Thread):
                 aaz=konw_a(float(plane_dict[6].strip()))
                 elev=float(plane_dict[7].strip())
                 elunc=float(plane_dict[7].strip())
+
+                # silly var names s01e01:
                 #kolorek=str(plane_dict[pentry][8])
                 kolorek='#ff0000'
                 dziewiec=str(plane_dict[9].strip())
@@ -1034,6 +1189,8 @@ class AsyncWrite(threading.Thread):
                     fontb['color'] = '#ff00ff' 
                     fontc['color'] = '#ffffff' 
                 #moon_s='aaaa'
+
+                # lewy_lim-23 < aaz < prawy_lim+23: # gdzie musk?!
                 if aaz > lewy_lim-23 and aaz < prawy_lim+23: 
                         aazx,eluncy = distorsXY1(in_center, konw_a(aaz),elunc)
                         if meters < 5000:
@@ -1071,7 +1228,9 @@ class AsyncWrite(threading.Thread):
                         elevis        = []
                         #aazs.append(aazx)
                         #elevis.append(eluncy)
-                        ############################## tranzyty
+                        ############################## transits preview START
+
+                        # todo: lowest sun/moon alt for plotting, it's madness now below 10-5 deg
                         if is_float_try(str(deg_missed1)):
                              if (loSep < float(deg_missed1) < hiSep):
                                 #if not plane_dict[41].strip() == '':
@@ -1106,6 +1265,7 @@ class AsyncWrite(threading.Thread):
                                     #tst_y=[vmay ,eluncy]
                                     ax.plot(tst_x,tst_y,'--',markersize=10, color='yellow', lw=1,alpha=0.3)
 
+                        # todo: lowest sun/moon alt for plotting, it's madness now below 10-5 deg
                         if is_float_try(str(deg_missed2)):
                             if (loSep < float(deg_missed2) < hiSep):
                                 #if not plane_dict[41].strip() == '':
@@ -1140,8 +1300,9 @@ class AsyncWrite(threading.Thread):
                                     #tst_x=[vmax, aazx]
                                     #tst_y=[vmay ,eluncy]
                                     ax.plot(tst_x,tst_y,'--',markersize=10, color='blue', lw=1,alpha=0.2)
-                        ############################## tranzyty koniec ###
+                        ############################## transits preview END ###
                         ######### start traili 
+                        '''
                         tmp_i = 0
                         if not plane_dict[15].strip() == '':
                             words1 = plane_dict[15]
@@ -1161,54 +1322,64 @@ class AsyncWrite(threading.Thread):
                                     if ((plane_pos_len-1) > i > 0):
                                         if aazs[i] > lewy_lim-23 and aazs[i] < prawy_lim+23: 
                                             alpha_hist = round(1/float(plane_pos_len/float(i)),2)
+                                            # this is cool with blending trails, but time cost is crazy with ax.plot in loop
+                                            # if alhablend_trails == "1" 
                                             #ax.plot((aazs[i-1],aazs[i]),(elevis[i-1], elevis[i]),'-',markersize=10, color=fontb['color'], lw=1, alpha=(alpha_hist/2))
                                     else:
                                         alpha_hist = 1
                                     tmp_i = i
                             #ax.plot(aaz1a,ele1a,'o',markersize=3, color=fontb['color'],alpha=alfa_trail)
+                            # this is less cool, because I can't pass alpha as array, but much faster:
+                            # elif alhablend_trails == "0"
                             ax.plot((aazs[0:tmp_i+1]),(elevis[0:tmp_i+1]),'-',markersize=10, color=fontb['color'], lw=1, alpha=0.6)
-
+                            # elif alhablend_trails == "-1"
+                            #   pass # no trails at all
                         #ax.plot(aazs,elevis,'o',markersize=5, color=fontb['color'], lw=1.5,alpha=0.3) 
                         #ax.plot(aazs,elevis,'-',markersize=5, color='white', lw=1.5,alpha=0.3) 
                         #ax.plot(aazs,elevis,'-',markersize=5, color=fontb['color'], lw=1,alpha=0.3) 
                         #########koniec traili 
-            iss=ephem.readtle(issline[0], issline[1], issline[2])
-            iss.compute(gatech)
-            #print math.degrees(iss.alt),math.degrees(iss.az)
-            #info = gatech.next_pass(iss)
-            #print("Rise time: %s azimuth: %s" % (info[0], info[1]))
-            if iss.eclipsed:
-                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
-            else:
-                    fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                    vert_alX=str('bottom') ; hori_alX=str('left')
-            if round(math.degrees(iss.alt),1) > 0:
-
-                issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
-                ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
-                #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
-                ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
-
-            iss_azis=[]
-            iss_elevis=[]
-            ISS_PREDICT=[-180,-150,-120,-90,-60,-30,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
-            for i in ISS_PREDICT:
-                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=i)#+ datetime.timedelta(minutes=35)
-                gatech.date = ephem.Date(d_t1)
+                        '''
+            if iss_ovrl == "1":
+                iss=ephem.readtle(issline[0], issline[1], issline[2])
                 iss.compute(gatech)
+                #print math.degrees(iss.alt),math.degrees(iss.az)
+                #info = gatech.next_pass(iss)
+                #print("Rise time: %s azimuth: %s" % (info[0], info[1]))
+                if iss.eclipsed:
+                    fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                    vert_alX=str('bottom') ; hori_alX=str('left')
+                else:
+                        fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                        vert_alX=str('bottom') ; hori_alX=str('left')
                 if round(math.degrees(iss.alt),1) > 0:
+
                     issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
-                    ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
-                    iss_azis.append(issaz)
-                    iss_elevis.append(issele)
+                    ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
+                    #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+                    ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
+
+                iss_azis=[]
+                iss_elevis=[]
+                ISS_PREDICT=[-180,-150,-120,-90,-60,-30,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+                for i in ISS_PREDICT:
+                    d_t1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=i)#+ datetime.timedelta(minutes=35)
+                    gatech.date = ephem.Date(d_t1)
+                    iss.compute(gatech)
+                    if round(math.degrees(iss.alt),1) > 0:
+                        issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                        ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
+                        iss_azis.append(issaz)
+                        iss_elevis.append(issele)
                 ####print iss.az,round(math.degrees(iss.alt),1)
 
-            #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
-            ####print iss_elevis
-        
+                #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
+                ####print iss_elevis
+
             gatech.date = ephem.now() #RESET!
             #ax.plot(float(in_center),15,'+',markersize=5, color='darkgreen', alpha=1)
+            # if calibration2_ovrl        == "1" # 2nd lvl which part below? 2nd lvl - preview of distortion grid "hellraiser" stuff 
+            # if calibration3_ovrl        == "1" # 3rd lvl which part below? 3rd lvl - lines from stars/planes data points without distortion to data points with distortion applied "hellraiser" stuff
+            #                                    # 4th lvl - was there 4th lvl with preview of data points after next distortion settings???? "we need to go deeper" case
             '''
             ax.plot(float(in_center),50,'+',markersize=15, color='darkgreen', alpha=1)
             ax.plot(float(in_center)+55,50,'+',markersize=15, color='darkgreen', alpha=1)
@@ -1308,16 +1479,16 @@ class AsyncWrite(threading.Thread):
                 maskaAntyFiol0 = cv2.imread(miscfld+"/"+str(maska_str)) 
                 maskaAntyFiol0 = maskaAntyFiol0.astype(np.single)        
             ocvi1 = op * (ocvi / 255) * (ocvi + ((2 * maskaAntyFiol0) / 255) * (255 - ocvi)) + (1 - op) * ocvi
-            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
         else:
             ocvi1 = opencvImageHD
-            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+            cv2.imwrite(tmpfld+'/wsc_720p_tmp.jpg', ocvi1, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
             #imgHD.save(tmpfld+'/wsc_720p_tmp.jpg')
 
         shutil.copy( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+"/WSC.tmp/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_720p_tmp.jpg', tmpfld+'/wsc_720p.jpg')
-        #imim.save(tmpfld+'/wsc_fullsize.jpg',"JPEG", quality=95)
-        imim.save(tmpfld+'/wsc_fullsize_tmp.jpg')
+        imim.save(tmpfld+'/wsc_fullsize_tmp.jpg',"JPEG", quality=int(q_fullsize))
+        #imim.save(tmpfld+'/wsc_fullsize_tmp.jpg')
         #imcv2.save(tmpfld+'/wsc_720p.jpg')
         #shutil.copy( tmpfld+'/wsc_720p.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")
         shutil.move( tmpfld+'/wsc_fullsize_tmp.jpg', tmpfld+"/WSC/"+self.aktual_t_f+".jpg")
@@ -1426,4 +1597,5 @@ def Main():
     
 if __name__=='__main__':
     Main()
+
 

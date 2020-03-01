@@ -24,8 +24,8 @@ h_resize = WSC_Conf.h_resize
 q_resize = WSC_Conf.q_resize
 q_fullsize = WSC_Conf.q_fullsize
 
-cam_azimuth  = WSC_Conf.cam_azimuth
-
+cam_azimuth   = WSC_Conf.cam_azimuth
+delay_between_captures = WSC_Conf.delay_between_captures
 crop_x = WSC_Conf.crop_x
 crop_y = WSC_Conf.crop_y
 crop_w = WSC_Conf.crop_w
@@ -35,6 +35,8 @@ overlay     = WSC_Conf.overlay
 spines_ovrl = WSC_Conf.spines_ovrl
 stars_ovrl  = WSC_Conf.stars_ovrl
 iss_ovrl  = WSC_Conf.iss_ovrl
+calibration1_ovrl = WSC_Conf.calibration1_ovrl
+calibration2_ovrl = WSC_Conf.calibration2_ovrl
 
 h_flip      = WSC_Conf.h_flip
 v_flip      = WSC_Conf.v_flip
@@ -398,6 +400,7 @@ def read_conf():
     global q_resize
     global q_fullsize
     global cam_azimuth
+    global delay_between_captures
     global crop_x
     global crop_y
     global crop_w
@@ -414,7 +417,9 @@ def read_conf():
     global landmarks_ovrl
     global iss_ovrl
     global issline
-
+    global calibration1_ovrl
+    global calibration2_ovrl
+    
     importlib.reload(WSC_Conf)
 
     w_resize = WSC_Conf.w_resize
@@ -423,6 +428,7 @@ def read_conf():
     q_fullsize = WSC_Conf.q_fullsize
 
     cam_azimuth  = WSC_Conf.cam_azimuth
+    delay_between_captures = WSC_Conf.delay_between_captures
 
     crop_x = WSC_Conf.crop_x
     crop_y = WSC_Conf.crop_y
@@ -441,6 +447,9 @@ def read_conf():
     n_wb1       = WSC_Conf.n_wb1
     n_wb2       = WSC_Conf.n_wb2
     landmarks_ovrl = WSC_Conf.landmarks_ovrl
+    iss_ovrl = WSC_Conf.iss_ovrl
+    calibration1_ovrl = WSC_Conf.calibration1_ovrl
+    calibration2_ovrl = WSC_Conf.calibration2_ovrl
 
     if iss_ovrl == "1":
         issline=[]
@@ -460,6 +469,7 @@ def cap_d():
     global q_resize
     global q_fullsize
     global cam_azimuth
+    global delay_between_captures
     global crop_x
     global crop_y
     global crop_w
@@ -476,6 +486,8 @@ def cap_d():
     global landmarks_ovrl
     global iss_ovrl
     global issline
+    global calibration1_ovrl
+    global calibration2_ovrl
 
     just_started = 1
     # a bit lower resolution than max, because @max likes to hang
@@ -641,8 +653,8 @@ def cap_d():
                     data = np.frombuffer(stream.getvalue(), dtype=np.uint8)
                     background = AsyncWrite(data, pass_aktual_t_f, pass_exposure, pass_iso, pass_mono)
                     background.start()
-                    if (exposure2 < 5):
-                        diff1 = 5-exposure2
+                    if (exposure2 < int(delay_between_captures)):
+                        diff1 = int(delay_between_captures)-exposure2
                         print("Diff: "+str(diff1)+"s")
                         time.sleep(diff1)
                 else:
@@ -898,12 +910,12 @@ class AsyncWrite(threading.Thread):
             
             fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }        
             vert_alX=str('top') ; hori_alX=str('center')    
-            
-            # if calibration1_ovrl        == "1" # calibration ovrl 1st lvl - just +++ on horizon curve
-            for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
-                x1,y1 = distorsXY1(in_center,x,0)
-                ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
-                ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
+             # calibration ovrl 1st lvl - just +++ on horizon curve
+            if calibration1_ovrl == "1":
+                for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
+                    x1,y1 = distorsXY1(in_center,x,0)
+                    ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
+                    ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
         
             #dolĂ˘â‚¬Ĺˇ-gora limity
             #ax.set_ylim(0,55)        
@@ -1380,69 +1392,69 @@ class AsyncWrite(threading.Thread):
             # if calibration2_ovrl        == "1" # 2nd lvl which part below? 2nd lvl - preview of distortion grid "hellraiser" stuff 
             # if calibration3_ovrl        == "1" # 3rd lvl which part below? 3rd lvl - lines from stars/planes data points without distortion to data points with distortion applied "hellraiser" stuff
             #                                    # 4th lvl - was there 4th lvl with preview of data points after next distortion settings???? "we need to go deeper" case
-            '''
-            ax.plot(float(in_center),50,'+',markersize=15, color='darkgreen', alpha=1)
-            ax.plot(float(in_center)+55,50,'+',markersize=15, color='darkgreen', alpha=1)
-            ax.plot(float(in_center)-55,50,'+',markersize=15, color='darkgreen', alpha=1)
-            ax.plot(float(in_center)+55,0,'+',markersize=15, color='darkgreen', alpha=1)
-            ax.plot(float(in_center)-55,0,'+',markersize=15, color='darkgreen', alpha=1)
-            '''
-            kalib= [
-            [float(in_center),	        15	],
-            [float(in_center),	        50	],
-            [float(in_center)+55,       50	],
-            [float(in_center)-55,       50	],
-            [float(in_center)+55,       25	],
-            [float(in_center)-55,       25	],
-            [float(in_center)+55,       0	],
-            [float(in_center)-55,       0	]]
-            
-            '''
-            [float(in_center),		],
-            [float(in_center),	6	],
-            [float(in_center),	6	],
-            [float(in_center),	1.5	],
-            [float(in_center),	1.5	],
-            [float(in_center),	6	],
-            [float(in_center), 	8	],
-            [float(in_center),	7.5	]]
-            '''
-            '''
-            for i in kalib:
+            ########################
+            if calibration2_ovrl == "1":
+                kalib= [
+                [float(in_center),	        15	],
+                [float(in_center),	        50	],
+                [float(in_center)+55,       50	],
+                [float(in_center)-55,       50	],
+                [float(in_center)+55,       25	],
+                [float(in_center)-55,       25	],
+                [float(in_center)+55,       0	],
+                [float(in_center)-55,       0	]]
+                '''
+                [float(in_center),	0	],
+                [float(in_center),	6	],
+                [float(in_center),	6	],
+                [float(in_center),	1.5	],
+                [float(in_center),	1.5	],
+                [float(in_center),	6	],
+                [float(in_center), 	8	],
+                [float(in_center),	7.5	]]
+                '''
+
+                for i in kalib:
                     if ( konw_a(i[0]) > (lewy_lim-30)) and (konw_a(i[0]) < (prawy_lim+30)) and (i[1] > -30) and (i[1] < 75):
-                    x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
-                    ax.plot(konw_a(i[0]), i[1],'+',markersize=15, color='green', alpha=1)
-                    ax.plot(konw_a(x), y,'+',markersize=15, color='white', alpha=1)
-                    #x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
-                    #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
-                    #ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
-                    ax.plot([konw_a(x),konw_a(i[0])],[y,i[1]],'-',markersize=15, lw=2,color='yellow', alpha=0.3)        
-            '''
-            '''
-            for x in range(int(lewy_lim-30),int(prawy_lim+31),5):
-                xdoa3 = []
-                ydob3 = []
-                for y in range(-0,61,10):
-                    x1,y1 = distorsXY1a(x,y)
-                    ax.plot(x,y,"*",markersize=2, markerfacecolor='none', markeredgecolor='red')
-                    ax.plot(x1,y1,'o',markersize=5, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3) 
-                    # xdoa3.append(x)
-                    xdoa3.append(x1)
-                    # ydob3.append(y)
-                    ydob3.append(y1)        
-                ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
-                # print x,x1,"                ",y,y1
+                        x,y = distorsXY1(in_center, konw_a(i[0]),i[1])
+                        ax.plot(konw_a(i[0]), i[1],'+',markersize=15, color='green', alpha=1)
+                        ax.plot(konw_a(x), y,'+',markersize=15, color='white', alpha=1)
+                        #x1,y1 = distorsXY1(in_center, konw_a(i[0]),(0))
+                        #ax.plot(konw_a(i[0]),i[1],'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                        #ax.plot(konw_a(x),y,'o',markersize=5, markerfacecolor='none', markeredgecolor='yellow', alpha=0.3)
+                        ax.plot([konw_a(x),konw_a(i[0])],[y,i[1]],'-',markersize=15, lw=2,color='yellow', alpha=0.3)        
 
-            for y in range(-0,61,10):        
-                xdoa3 = []
-                ydob3 = []
+                # horizontal distorsion grid lines, 
+                for x in range(int(lewy_lim-30),int(prawy_lim+31),5):
+                    xdoa3 = []
+                    ydob3 = []
+                    xdoa3a = []
+                    ydob3a = []
+                    for y in range(-0,61,10):
+                        x1,y1 = distorsXY1a(x,y)
+                        # grid of red dots without distortion applied
+                        ax.plot(x,y,"*",markersize=2, markerfacecolor='none', markeredgecolor='red')
+                        # grid of white dots with distortion applied, should overlay on crossings of horizontal/vertical grid lines
+                        ax.plot(x1,y1,'o',markersize=5, markerfacecolor='none', markeredgecolor='#ffffff', alpha=0.3) 
+                        xdoa3a.append(x)
+                        xdoa3.append(x1)
+                        ydob3a.append(y)
+                        ydob3.append(y1)        
+                    # horizontal distortion grid lines
+                    ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
+                    # print x,x1,"                ",y,y1
+                    ax.plot([xdoa3, xdoa3a],[ydob3,ydob3a],'-',markersize=15, lw=2,color='yellow', alpha=0.3)
+                # vertcical distorsion  grid lines
+                for y in range(-0,61,10):        
+                    xdoa3 = []
+                    ydob3 = []
                     for x in range(int(lewy_lim-30),int(prawy_lim+31),10):
-                    x1,y1 = distorsXY1a(x,y)
-                    xdoa3.append(x1)
-                    ydob3.append(y1)        
-                ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
+                        x1,y1 = distorsXY1a(x,y)
+                        xdoa3.append(x1)
+                        ydob3.append(y1)        
+                    ax.plot(xdoa3,ydob3, '-',markersize=10, color='red', lw=1,alpha=.4)
 
-            '''
+            #######################################
             #gatech.date = ephem.now()
             testtime = datetime.datetime.now().strftime('%H:%M:%S')
             fontX = {'color':  "white", 'size': 10, 'weight': 'normal', 'family': 'monospace', }
@@ -1450,7 +1462,7 @@ class AsyncWrite(threading.Thread):
 
             ax.text(int(time_pl),-2., str('Plot_t:  '+testtime), fontdict=fontX, alpha=1)
             ax.text(int(time_pl)+15,-2, str('Radar_t: '+last_time_fw), fontdict=fontX, alpha=1)
-            
+
             s, (width, height) = canvas.print_to_buffer()
             foreground = Image.frombytes("RGBA", (width, height), s)#,alpha=1)
             imgHD.paste(foreground, (0, 0), foreground)

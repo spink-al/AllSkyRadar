@@ -3,7 +3,7 @@
 
 
 # Requirements 
-rPi4 Raspbian Buster Linux rPi4 4.19.97-v7l+ #1294 (2020-02-13) 
+rPi4 Raspbian Buster Linux rPi4 4.19.97-v7l+ #1294 (2020-02-05 or 2020-02-13?) 
 
 https://github.com/spink-al/picamera
 

@@ -9,6 +9,8 @@ https://github.com/spink-al/picamera
 
 https://github.com/spink-al/zwo-skycam
 
+for use of misc/_schedule.sh 
+
 https://github.com/risacher/sunwait
 
 sudo pip3 install opencv-python==3.4.6.27

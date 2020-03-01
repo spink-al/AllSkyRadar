@@ -8,8 +8,8 @@ q_resize        = "85"
 q_fullsize      = "85"
 
 # Where the camera is pointing
-cam_azimuth     = "111"
-
+cam_azimuth     = "259"
+delay_between_captures = "5"
 # Crop fullsize (camera.resolution) 3104x2304 to 3104x1746 starting at x=0, y=0
 crop_x          = "0"
 crop_y          = "0"
@@ -24,12 +24,21 @@ spines_ovrl     = "1"
 stars_ovrl      = "0"
 iss_ovrl        = "1"
 
-calibration1_ovrl        = "1" #todo
-calibration2_ovrl        = "1" #todo
+# horizon calibration layer
+calibration1_ovrl        = "1"
+# distortion grid, etc. Use 10s instead of 5s delay_between_captures, it is time consuming
+calibration2_ovrl        = "0"
+
+# still inactive, todo
 calibration3_ovrl        = "1" #todo
 calibration4_ovrl        = "1" #todo?
 
+#plot landmarks
 landmarks_ovrl  = "1"
+
+# trails disabled in rPiCamera.py atm
+plot_trails = "0" # todo
+
 # time costly but eyecandy plane trails:
 alhablend_trails = "1" #todo
 

@@ -22,7 +22,7 @@ overlay         = "1"
 spines_ovrl     = "1"
 # aside from sun/moon/planets: 
 stars_ovrl      = "0"
-iss_ovrl        = "1" #todo
+iss_ovrl        = "1"
 
 calibration1_ovrl        = "1" #todo
 calibration2_ovrl        = "1" #todo

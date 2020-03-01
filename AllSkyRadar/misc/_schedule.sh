@@ -1,6 +1,10 @@
 #!/bin/bash
+
+# Change lat/lon
 my_lat="51.1234N"
 my_lon="15.1234E"
+
+# Check paths! todo
 
 ##############################################################################################
 # !!! offset [MM|HH:MM] Time interval (+ve towards noon) to adjust twilight calculation. !!! #

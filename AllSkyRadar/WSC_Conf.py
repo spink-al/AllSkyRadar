@@ -8,20 +8,20 @@ q_resize        = "85"
 q_fullsize      = "85"
 
 # Where the camera is pointing
-cam_azimuth     = "105"
+cam_azimuth     = "111"
 
 # Crop fullsize (camera.resolution) 3104x2304 to 3104x1746 starting at x=0, y=0
 crop_x          = "0"
 crop_y          = "0"
 crop_w          = "3104"
 crop_h          = "1746"
+
 # plot enabled/disabled
 overlay         = "1"
 # plot frame:
 spines_ovrl     = "1"
 # aside from sun/moon/planets: 
 stars_ovrl      = "0"
-
 iss_ovrl        = "1" #todo
 
 calibration1_ovrl        = "1" #todo
@@ -29,9 +29,9 @@ calibration2_ovrl        = "1" #todo
 calibration3_ovrl        = "1" #todo
 calibration4_ovrl        = "1" #todo?
 
-landmarks_ovrl  = "1" #todo
+landmarks_ovrl  = "1"
 # time costly but eyecandy plane trails:
-alphablend_trails = "1" #todo 
+alhablend_trails = "1" #todo
 
 
 # Hardware flips need script reset lvl2

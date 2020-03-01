@@ -34,6 +34,7 @@ crop_h = WSC_Conf.crop_h
 overlay     = WSC_Conf.overlay
 spines_ovrl = WSC_Conf.spines_ovrl
 stars_ovrl  = WSC_Conf.stars_ovrl
+iss_ovrl  = WSC_Conf.iss_ovrl
 
 h_flip      = WSC_Conf.h_flip
 v_flip      = WSC_Conf.v_flip
@@ -42,6 +43,7 @@ d_wb1       = WSC_Conf.d_wb1
 d_wb2       = WSC_Conf.d_wb2
 n_wb1       = WSC_Conf.n_wb1
 n_wb2       = WSC_Conf.n_wb2
+
 landmarks_ovrl = WSC_Conf.landmarks_ovrl
 
 #print(w_resize, h_resize, float(w_resize)/100, float(h_resize)/100)
@@ -50,7 +52,8 @@ landmarks_ovrl = WSC_Conf.landmarks_ovrl
 
 tmpfld = ASR_Conf.TMP_FLDR
 miscfld = ASR_Conf.MISC_FLDR
-tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+
+
 # lat/lon/alt defined outside in conf file ASR_Conf.py
 my_lat = ASR_Conf.MY_LAT
 my_lon = ASR_Conf.MY_LON
@@ -63,15 +66,16 @@ gatech.lat = str(my_lat) # passed as float makes flip
 gatech.lon = str(my_lon) # passed as float makes flip
 gatech.elevation = int(my_alt)
 
-issline=[]
+if iss_ovrl == "1":
+    issline=[]
+    tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+    tlefile=open(tleFileName, 'r')
+    tledata=tlefile.readlines()
+    tlefile.close()
 
-tlefile=open(tleFileName, 'r')
-tledata=tlefile.readlines()
-tlefile.close()
-
-for i, line in enumerate(tledata):
-    if "ISS" in line: 
-        for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
+    for i, line in enumerate(tledata):
+        if "ISS" in line: 
+            for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
 
 #print(tledata)
 deg = u'\xb0'
@@ -408,16 +412,18 @@ def read_conf():
     global n_wb1
     global n_wb2
     global landmarks_ovrl
-    
+    global iss_ovrl
+    global issline
+
     importlib.reload(WSC_Conf)
-    
+
     w_resize = WSC_Conf.w_resize
     h_resize = WSC_Conf.h_resize
     q_resize = WSC_Conf.q_resize
     q_fullsize = WSC_Conf.q_fullsize
 
     cam_azimuth  = WSC_Conf.cam_azimuth
-    
+
     crop_x = WSC_Conf.crop_x
     crop_y = WSC_Conf.crop_y
     crop_w = WSC_Conf.crop_w
@@ -436,8 +442,19 @@ def read_conf():
     n_wb2       = WSC_Conf.n_wb2
     landmarks_ovrl = WSC_Conf.landmarks_ovrl
 
+    if iss_ovrl == "1":
+        issline=[]
+        tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
+        tlefile=open(tleFileName, 'r')
+        tledata=tlefile.readlines()
+        tlefile.close()
+
+        for i, line in enumerate(tledata):
+            if "ISS" in line: 
+                for l in tledata[i:i+3]: issline.append(l.strip('\r\n').rstrip()),
+
 def cap_d():
-    
+
     global w_resize
     global h_resize
     global q_resize
@@ -457,6 +474,9 @@ def cap_d():
     global n_wb1
     global n_wb2
     global landmarks_ovrl
+    global iss_ovrl
+    global issline
+
     just_started = 1
     # a bit lower resolution than max, because @max likes to hang
     camera = picamera.PiCamera(resolution=(3104, 2304), sensor_mode=3)
@@ -885,7 +905,7 @@ class AsyncWrite(threading.Thread):
                 ax.plot(x1,y1,"+",markersize=15, markerfacecolor='red', markeredgecolor='red', alpha=1)
                 ax.text(x1,y1, ' \n'+str(x)+' \n ', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
         
-            #dolâ€š-gora limity
+            #dolĂ˘â‚¬Ĺˇ-gora limity
             #ax.set_ylim(0,55)        
             #ax.set_xticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
             #ax.set_yticks([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180])
@@ -1319,41 +1339,41 @@ class AsyncWrite(threading.Thread):
                         #ax.plot(aazs,elevis,'-',markersize=5, color=fontb['color'], lw=1,alpha=0.3) 
                         #########koniec traili 
                         '''
-            # if iss_ovrl        == "1" 
-            iss=ephem.readtle(issline[0], issline[1], issline[2])
-            iss.compute(gatech)
-            #print math.degrees(iss.alt),math.degrees(iss.az)
-            #info = gatech.next_pass(iss)
-            #print("Rise time: %s azimuth: %s" % (info[0], info[1]))
-            if iss.eclipsed:
-                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
-            else:
-                    fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                    vert_alX=str('bottom') ; hori_alX=str('left')
-            if round(math.degrees(iss.alt),1) > 0:
-
-                issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
-                ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
-                #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
-                ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
-
-            iss_azis=[]
-            iss_elevis=[]
-            ISS_PREDICT=[-180,-150,-120,-90,-60,-30,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
-            for i in ISS_PREDICT:
-                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=i)#+ datetime.timedelta(minutes=35)
-                gatech.date = ephem.Date(d_t1)
+            if iss_ovrl == "1":
+                iss=ephem.readtle(issline[0], issline[1], issline[2])
                 iss.compute(gatech)
+                #print math.degrees(iss.alt),math.degrees(iss.az)
+                #info = gatech.next_pass(iss)
+                #print("Rise time: %s azimuth: %s" % (info[0], info[1]))
+                if iss.eclipsed:
+                    fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                    vert_alX=str('bottom') ; hori_alX=str('left')
+                else:
+                        fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                        vert_alX=str('bottom') ; hori_alX=str('left')
                 if round(math.degrees(iss.alt),1) > 0:
+
                     issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
-                    ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
-                    iss_azis.append(issaz)
-                    iss_elevis.append(issele)
+                    ax.plot(issaz,issele,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1) 
+                    #ax.text(konw_a(round(math.degrees(iss.az), 1)),(round(math.degrees(iss.alt), 1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+                    ax.text(issaz,issele, ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.9)
+
+                iss_azis=[]
+                iss_elevis=[]
+                ISS_PREDICT=[-180,-150,-120,-90,-60,-30,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+                for i in ISS_PREDICT:
+                    d_t1 = datetime.datetime.utcnow() + datetime.timedelta(seconds=i)#+ datetime.timedelta(minutes=35)
+                    gatech.date = ephem.Date(d_t1)
+                    iss.compute(gatech)
+                    if round(math.degrees(iss.alt),1) > 0:
+                        issaz,issele = distorsXY1(in_center, konw_a(round(math.degrees(iss.az), 1)),round(math.degrees(iss.alt), 1))
+                        ax.plot(issaz,issele,'o',markersize=4, markerfacecolor=fontX['color'], markeredgecolor=fontX['color'], alpha=0.6)
+                        iss_azis.append(issaz)
+                        iss_elevis.append(issele)
                 ####print iss.az,round(math.degrees(iss.alt),1)
 
-            #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
-            ####print iss_elevis
+                #ax.plot(iss_azis,iss_elevis,'--',markersize=10, color='white', lw=1, alpha=0.6) 
+                ####print iss_elevis
 
             gatech.date = ephem.now() #RESET!
             #ax.plot(float(in_center),15,'+',markersize=5, color='darkgreen', alpha=1)

@@ -28,29 +28,16 @@ tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
 w_resize = Dummy_Conf.w_resize
 h_resize = Dummy_Conf.h_resize
 q_resize = Dummy_Conf.q_resize
-#q_fullsize = Dummy_Conf.q_fullsize
 
-#tmpconf8 atm
+
+
 theta_corr  = Dummy_Conf.theta_corr
 delay_between_captures = Dummy_Conf.delay_between_captures
-
-#crop_x = Dummy_Conf.crop_x
-#crop_y = Dummy_Conf.crop_y
-#crop_w = Dummy_Conf.crop_w
-#crop_h = Dummy_Conf.crop_h
 
 overlay     = Dummy_Conf.overlay
 spines_ovrl = Dummy_Conf.spines_ovrl
 stars_ovrl  = Dummy_Conf.stars_ovrl
 bg_color = Dummy_Conf.bg_color
-#h_flip      = Dummy_Conf.h_flip
-#v_flip      = Dummy_Conf.v_flip
-# = Dummy_Conf.
-
-#d_wb1       = Dummy_Conf.d_wb1
-#d_wb2       = Dummy_Conf.d_wb2
-#n_wb1       = Dummy_Conf.n_wb1
-#n_wb2       = Dummy_Conf.n_wb2
 
 plot_adj_l       = Dummy_Conf.plot_adj_l
 plot_adj_b       = Dummy_Conf.plot_adj_b
@@ -61,20 +48,12 @@ plot_adj_t       = Dummy_Conf.plot_adj_t
 
 landmarks_ovrl = Dummy_Conf.landmarks_ovrl
 iss_ovrl = Dummy_Conf.iss_ovrl
-#calibration1_ovrl = Dummy_Conf.calibration1_ovrl
-#calibration2_ovrl = Dummy_Conf.calibration2_ovrl
+
 plot_trails = Dummy_Conf.plot_trails
 alhablend_trails = Dummy_Conf.alhablend_trails
 
-#DataFileName0 = tmpfld+"/tmpconf"
-#DataFileName1 = tmpfld+"/tmpconf1"
-#DataFileName2 = tmpfld+"/tmpconf2"
-#DataFileName3 = tmpfld+"/tmpconf3"
-#DataFileName4 = tmpfld+"/tmpconf4"
-#DataFileName7 = tmpfld+"/tmpconf7"
-#DataFileName8 = tmpfld+"/tmpconf8"
+
 DataFileName9D = tmpfld+"/tmpconf9D"
-#SkyCam.initialize( "./asi.so" )
 
 issline=[]
 #tleFileName='/tmp/iss.tle'
@@ -131,41 +110,6 @@ def is_int_try(str):
         return True
     except ValueError:
         return False
-
-
-def tstasi120(im):
-    q0Ax = 150 ; q0Ay = 0
-    q1Ax = 150 ; q1Ay = 930
-    q2Ax = 1100 ; q2Ay = 930
-    q3Ax = 1100 ; q3Ay = 0
-    q4Ax = 250 ; q4Ay = 100
-
-    img0A = im.crop((q0Ax, q0Ay, q0Ax+30, q0Ay+30))
-    img1A = im.crop((q1Ax, q1Ay, q1Ax+30, q1Ay+30))
-    img2A = im.crop((q2Ax, q2Ay, q2Ax+30, q2Ay+30))
-    img3A = im.crop((q3Ax, q3Ay, q3Ax+30, q3Ay+30))
-    img4A = im.crop((q4Ax, q4Ay, q4Ax+750, q4Ay+750))
-
-    data0A = img0A.convert ('L')
-    data1A = img1A.convert ('L')
-    data2A = img2A.convert ('L')
-    data3A = img3A.convert ('L')
-    data4A = img4A.convert ('L')
-    stat0A = ImageStat.Stat(data0A)
-    stat1A = ImageStat.Stat(data1A)
-    stat2A = ImageStat.Stat(data2A)
-    stat3A = ImageStat.Stat(data3A)
-    stat4A = ImageStat.Stat(data4A)
-    print(int(stat0A.rms[0]), int(stat1A.rms[0]), int(stat2A.rms[0]), int(stat3A.rms[0]), int(stat4A.rms[0]))
-    if (int(stat0A.rms[0]) > 30):  #> (int(stat0A.rms[0] + 10))):
-        return 1, int(stat4A.rms[0])
-    if (int(stat1A.rms[0]) > 30):  # > (int(stat0A.rms[0] + 10))):
-        return 1, int(stat4A.rms[0])
-    if (int(stat2A.rms[0]) > 30):  # > (int(stat0A.rms[0] + 10))):
-        return 1, int(stat4A.rms[0])
-    if (int(stat3A.rms[0]) > 30):  # > (int(stat0A.rms[0] + 10))):
-        return 1, int(stat4A.rms[0])
-    return 0, int(stat4A.rms[0])
 
 lasttest = 100
 test2 = 100
@@ -655,39 +599,8 @@ class AsyncWrite(threading.Thread):
         str_vma = "Mar:  "+str('{:> 6.1f}'.format((  round(math.degrees(vma.alt), 1))))+deg+" "+str('{:> 6.1f}'.format((  round(math.degrees(vma.az), 1))))+deg
         str_vve = "Ven:  "+str('{:> 6.1f}'.format((  round(math.degrees(vve.alt), 1))))+deg+" "+str('{:> 6.1f}'.format((  round(math.degrees(vve.az), 1))))+deg
 
-
-        '''
-        datafile0=open(DataFileName0, 'r')
-        dataz0=datafile0.readlines()
-        datafile0.close()
-    
-        datafile1=open(DataFileName1, 'r')
-        dataz1=datafile1.readlines()
-        datafile1.close()
-        '''
-
-        
-        #im = Image.frombuffer('RGB', (3096, 2080), self.arr, 'raw', 'BGR', 0, 0)
-        #imcv = cv2.cvtColor(self.arr,cv2.COLOR_BGR2RGB)
-        #imcv = cv2.cvtColor(self.arr,cv2.COLOR_BGR2RGB)
-        #lasttest = test2
-
-        #test3 = col_test(imcv)
-        #if (test3 > 0):
-        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)	
-        #    imcv = cv2.cvtColor(imcv, cv2.COLOR_GRAY2BGR)
-        #elif (int(dataz7[0]) == 1):    
-        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)	
-        #    imcv = cv2.cvtColor(imcv, cv2.COLOR_GRAY2BGR)
-
-        #im = Image.fromarray(imcv)
-        #test, test2, crop = tstasi178(im)
-
         imagCrop = Image.new('RGB', (1080, 1080), color = str(bg_color))
-        #imagCrop = Image.new('RGB', (2240, 2240), color = '#262626')
-        #imagCrop = Image.new('RGB', (1080, 1080), color = '#262626')
-        #imagCrop = Image.new('RGB', (1080, 1080), color = '#9fa69b')
-        
+
         draw = ImageDraw.Draw(imagCrop)
         
         font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 15)
@@ -775,14 +688,7 @@ def read_conf():
     overlay     = Dummy_Conf.overlay
     spines_ovrl = Dummy_Conf.spines_ovrl
     stars_ovrl  = Dummy_Conf.stars_ovrl
-    #h_flip      = Dummy_Conf.h_flip
-    #v_flip      = Dummy_Conf.v_flip
-    # = Dummy_Conf.
 
-    #d_wb1       = Dummy_Conf.d_wb1
-    #d_wb2       = Dummy_Conf.d_wb2
-    #n_wb1       = Dummy_Conf.n_wb1
-    #n_wb2       = Dummy_Conf.n_wb2
     landmarks_ovrl = Dummy_Conf.landmarks_ovrl
     iss_ovrl = Dummy_Conf.iss_ovrl
     calibration1_ovrl = Dummy_Conf.calibration1_ovrl
@@ -831,15 +737,7 @@ def Main():
     global plot_adj_r
     global plot_adj_t
     global bg_color
-    #plot_adj_l       = Dummy_Conf.plot_adj_l
-    #plot_adj_b       = Dummy_Conf.plot_adj_b
-    #plot_adj_r       = Dummy_Conf.plot_adj_r
-    #plot_adj_t       = Dummy_Conf.plot_adj_t
-    #global calibration1_ovrl
-    #global calibration2_ovrl
-    #global pfff
-    #global dataz
-    #global datay
+
     with open(DataFileName9D,'w') as tsttxt:
         newdataz = 0
         tsttxt.write(str(newdataz)+"\n")

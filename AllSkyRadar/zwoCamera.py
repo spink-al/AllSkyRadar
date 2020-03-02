@@ -1220,10 +1220,7 @@ def Main():
     global plot_adj_b
     global plot_adj_r
     global plot_adj_t
-    plot_adj_l       = ZWO_Conf.plot_adj_l
-    plot_adj_b       = ZWO_Conf.plot_adj_b
-    plot_adj_r       = ZWO_Conf.plot_adj_r
-    plot_adj_t       = ZWO_Conf.plot_adj_t
+
     #global calibration1_ovrl
     #global calibration2_ovrl
     #global pfff

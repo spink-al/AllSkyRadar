@@ -1,3 +1,6 @@
+# Do not use spaces between var name and "=" or after "=",
+# *conf.py files are used also by bash scripts, and this will creep them out!
+
 BIN_FLDR="/home/pi/AllSkyRadar"
 VRS_FLDR="/home/pi/VRS"
 FW_FLDR="/home/pi/flight_warning"

@@ -24,7 +24,7 @@ theta_corr="0.0"
 # or html color, but something dark, fonts are set to white
 bg_color='#333300'
 
-delay_between_captures="5"
+delay_between_captures="10"
 # Crop fullsize (camera.resolution) 3104x2304 to 3104x1746 starting at x=0, y=0
 #crop_x="678"
 #crop_y="57"
@@ -36,7 +36,7 @@ overlay="1"
 # plot frame:
 spines_ovrl="1"
 # aside from sun/moon/planets: 
-stars_ovrl="1"
+stars_ovrl="0"
 star_names="0" # todoz
 iss_ovrl="1"
 

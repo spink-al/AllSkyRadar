@@ -15,8 +15,11 @@ q_fullsize="95"
 # theta azimuth correction  (rotation of plot)
 # but something strange happens when less then -8.0
 theta_corr="-7.0"
-# horizon calibration layer (plot borders down/up/left/right vs image)
-#top_
+# plot calibration (plot borders left/bottom/righ/topt vs image - streching) 
+plot_adj_l="-0.01"
+plot_adj_b="0.01"
+plot_adj_r="1.03"
+plot_adj_t="1.0"
 
 delay_between_captures="10"
 # Crop fullsize (camera.resolution) 3104x2304 to 3104x1746 starting at x=0, y=0
@@ -55,8 +58,5 @@ d_wb2="1.4"
 n_wb1="1.2"
 n_wb2="2.0"
 
-plot_adj_l="-0.01"
-plot_adj_b="0.01"
-plot_adj_r="1.03"
-plot_adj_t="1.0"
+
 

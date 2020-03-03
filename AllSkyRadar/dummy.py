@@ -7,7 +7,7 @@ import datetime
 from PIL import Image, ImageStat, ImageFont, ImageDraw,ImageColor
 import shutil
 import os, errno
-import cv2
+#import cv2
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 import numpy as np
@@ -28,11 +28,16 @@ tleFileName = ASR_Conf.TMP_FLDR+'/iss.tle'
 w_resize = Dummy_Conf.w_resize
 h_resize = Dummy_Conf.h_resize
 q_resize = Dummy_Conf.q_resize
+#q_fullsize = Dummy_Conf.q_fullsize
 
-
-
+#tmpconf8 atm
 theta_corr  = Dummy_Conf.theta_corr
 delay_between_captures = Dummy_Conf.delay_between_captures
+
+#crop_x = Dummy_Conf.crop_x
+#crop_y = Dummy_Conf.crop_y
+#crop_w = Dummy_Conf.crop_w
+#crop_h = Dummy_Conf.crop_h
 
 overlay     = Dummy_Conf.overlay
 spines_ovrl = Dummy_Conf.spines_ovrl
@@ -48,7 +53,8 @@ plot_adj_t       = Dummy_Conf.plot_adj_t
 
 landmarks_ovrl = Dummy_Conf.landmarks_ovrl
 iss_ovrl = Dummy_Conf.iss_ovrl
-
+#calibration1_ovrl = Dummy_Conf.calibration1_ovrl
+#calibration2_ovrl = Dummy_Conf.calibration2_ovrl
 plot_trails = Dummy_Conf.plot_trails
 alhablend_trails = Dummy_Conf.alhablend_trails
 
@@ -85,7 +91,7 @@ luns = u"\u263d"
 #except ValueError:
 #    print("xxxxxx")
 ''' 
-# nie działa pod python 3
+# nie dziaĹ‚a pod python 3
 def symlink_force(target, link_name):
     try:
         os.symlink(target, link_name)
@@ -111,8 +117,7 @@ def is_int_try(str):
     except ValueError:
         return False
 
-lasttest = 100
-test2 = 100
+
 
 def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
     if int(overlay) == 1:
@@ -137,17 +142,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         if int(iss_ovrl) == 1:
             iss=ephem.readtle(issline[0], issline[1], issline[2])
             iss.compute(gatech)
-            if iss.eclipsed:
-                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
-            else:
-                fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
 
-            ax.plot(iss.az,90-(round(math.degrees(iss.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1)
-            #ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
-            ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
-        
             iss_azis=[]
             iss_elevis=[]
             ISS_PREDICT=[-180,-150,-120,-90,-60,-30,0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
@@ -167,7 +162,17 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             info = gatech.next_pass(iss)
             print("Rise time: %s azimuth: %s" % (info[0], info[1]))
 
+            if iss.eclipsed:
+                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                vert_alX=str('bottom') ; hori_alX=str('left')
+            else:
+                fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                vert_alX=str('bottom') ; hori_alX=str('left')
 
+            ax.plot(iss.az,90-(round(math.degrees(iss.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1)
+            #ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
+            ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+        
         gatech.date = ephem.now() #RESET!
 
         if int(stars_ovrl) == 1:
@@ -557,10 +562,15 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         #plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f, x)
         imagCropHD1.paste(foreground, (0, 0), foreground)
 
-    opencvImageHD = cv2.cvtColor(np.array(imagCropHD1), cv2.COLOR_RGB2BGR)
-    #im_nameHD = tmpfld+"/dummy.tmp/imageHD_"+aktual_t_f+str(licznik_1)+".jpg"
+
+    #opencvImageHD = cv2.cvtColor(np.array(imagCropHD1), cv2.COLOR_RGB2BGR)
     dst_tmp = tmpfld+'/dummy_tmp.jpg'
-    cv2.imwrite(dst_tmp, opencvImageHD, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
+    #cv2.imwrite(dst_tmp, opencvImageHD, [int(cv2.IMWRITE_JPEG_QUALITY), int(q_resize)])
+
+    #opencvImageHD = Image.fromarray(imagCropHD1)
+    imagCropHD1.save(dst_tmp,"JPEG", quality=int(q_resize))
+    
+    #im_nameHD = tmpfld+"/dummy.tmp/imageHD_"+aktual_t_f+str(licznik_1)+".jpg"
     dst = tmpfld+'/dummy_1080p.jpg'
     #shutil.copy( dst_tmp, im_nameHD)
     shutil.move( dst_tmp, dst)
@@ -600,7 +610,10 @@ class AsyncWrite(threading.Thread):
         str_vve = "Ven:  "+str('{:> 6.1f}'.format((  round(math.degrees(vve.alt), 1))))+deg+" "+str('{:> 6.1f}'.format((  round(math.degrees(vve.az), 1))))+deg
 
         imagCrop = Image.new('RGB', (1080, 1080), color = str(bg_color))
-
+        #imagCrop = Image.new('RGB', (2240, 2240), color = '#262626')
+        #imagCrop = Image.new('RGB', (1080, 1080), color = '#262626')
+        #imagCrop = Image.new('RGB', (1080, 1080), color = '#9fa69b')
+        
         draw = ImageDraw.Draw(imagCrop)
         
         font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 15)
@@ -688,7 +701,14 @@ def read_conf():
     overlay     = Dummy_Conf.overlay
     spines_ovrl = Dummy_Conf.spines_ovrl
     stars_ovrl  = Dummy_Conf.stars_ovrl
+    #h_flip      = Dummy_Conf.h_flip
+    #v_flip      = Dummy_Conf.v_flip
+    # = Dummy_Conf.
 
+    #d_wb1       = Dummy_Conf.d_wb1
+    #d_wb2       = Dummy_Conf.d_wb2
+    #n_wb1       = Dummy_Conf.n_wb1
+    #n_wb2       = Dummy_Conf.n_wb2
     landmarks_ovrl = Dummy_Conf.landmarks_ovrl
     iss_ovrl = Dummy_Conf.iss_ovrl
     calibration1_ovrl = Dummy_Conf.calibration1_ovrl
@@ -737,7 +757,15 @@ def Main():
     global plot_adj_r
     global plot_adj_t
     global bg_color
-
+    #plot_adj_l       = Dummy_Conf.plot_adj_l
+    #plot_adj_b       = Dummy_Conf.plot_adj_b
+    #plot_adj_r       = Dummy_Conf.plot_adj_r
+    #plot_adj_t       = Dummy_Conf.plot_adj_t
+    #global calibration1_ovrl
+    #global calibration2_ovrl
+    #global pfff
+    #global dataz
+    #global datay
     with open(DataFileName9D,'w') as tsttxt:
         newdataz = 0
         tsttxt.write(str(newdataz)+"\n")

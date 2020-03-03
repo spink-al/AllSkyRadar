@@ -137,7 +137,17 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         if int(iss_ovrl) == 1:
             iss=ephem.readtle(issline[0], issline[1], issline[2])
             iss.compute(gatech)
+            if iss.eclipsed:
+                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                vert_alX=str('bottom') ; hori_alX=str('left')
+            else:
+                fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
+                vert_alX=str('bottom') ; hori_alX=str('left')
 
+            ax.plot(iss.az,90-(round(math.degrees(iss.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1)
+            #ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
+            ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
+        
             iss_azis=[]
             iss_elevis=[]
             ISS_PREDICT=[-180,-150,-120,-90,-60,-30,0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
@@ -157,17 +167,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             info = gatech.next_pass(iss)
             print("Rise time: %s azimuth: %s" % (info[0], info[1]))
 
-            if iss.eclipsed:
-                fontX = {'color':  "darkgray", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
-            else:
-                fontX = {'color':  "white", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-                vert_alX=str('bottom') ; hori_alX=str('left')
 
-            ax.plot(iss.az,90-(round(math.degrees(iss.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=fontX['color'], alpha=1)
-            #ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' ISS', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=1)
-            ax.text(iss.az,90-(round(math.degrees(iss.alt),1)), ' \n ISS \n '+str(int(iss.range)/1000)+'km', verticalalignment=vert_alX, horizontalalignment=hori_alX, fontdict=fontX, alpha=0.3)
-        
         gatech.date = ephem.now() #RESET!
 
         if int(stars_ovrl) == 1:

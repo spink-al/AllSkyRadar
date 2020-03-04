@@ -641,7 +641,7 @@ class AsyncWrite(threading.Thread):
         plotting_1(imagCropHD, vs, vm, vju, vsa, vma, vve, self.aktual_t_f)
         aktual_t4 = datetime.datetime.now()
         aaaa1 = datetime.timedelta.total_seconds(aktual_t4-aktual_t3)
-        print("Saved 0: ", self.aktual_t_f, "Br:", test2, "Time: ", aaaa1)
+        print("Saved 0: ", self.aktual_t_f, "Time: ", aaaa1)
 
 
 def read_conf():

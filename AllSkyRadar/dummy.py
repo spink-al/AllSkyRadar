@@ -106,7 +106,7 @@ luns = u"\u263d"
 #except ValueError:
 #    print("xxxxxx")
 ''' 
-# nie dziaĹ‚a pod python 3
+# nie dziaÄąâ€ša pod python 3
 def symlink_force(target, link_name):
     try:
         os.symlink(target, link_name)
@@ -193,7 +193,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             datazX=datafileX.readlines()
             datafileX.close()
         else:
-            dataz=''
+            datazX=''
 
         if not dataz:
             last_time_fw = 'N/A'
@@ -615,8 +615,14 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
 
             if is_int_try(str(plane_dict[11].strip())):
                 track=float(360-(270-int(str(plane_dict[11].strip()))))
+                track_1=float(360-(270-int(str(plane_dict[11].strip()))))
+                track_2= int(str(plane_dict[11].strip()))
+
             else:
                 track = 0
+                track_1 = 0
+                track_2 = 0
+
             azi=np.radians(float(plane_dict[6].strip()))
             aaz=float(plane_dict[6].strip())
             elev=90-float(plane_dict[7].strip())
@@ -625,6 +631,32 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             kolorek='#ff0000'
             dziewiec=str(plane_dict[9].strip())
             dwana=str(plane_dict[12].strip())
+            if is_int_try(str(plane_dict[30].strip())):
+                xtd_a=float(str(plane_dict[30].strip()))
+                #print('1a',xtd_a, 'b', plane_dict[30].strip(),'c')
+
+            elif is_float_try(str(plane_dict[30].strip())):
+                xtd_a=float(str(plane_dict[30].strip()))
+                #print('2a',xtd_a, 'b', plane_dict[30].strip(),'c')
+                #print('      ', xtd_a)
+            else:
+                xtd_a=str(plane_dict[31].strip())
+                #print('3a',xtd_a, 'b', plane_dict[30].strip(),'c')
+
+
+
+            if is_int_try(str(plane_dict[13].strip())):
+                xtd_b=float(str(plane_dict[13].strip()))
+                ##print('1a',xtd_a, 'b', plane_dict[30].strip(),'c')
+
+            elif is_float_try(str(plane_dict[13].strip())):
+                xtd_b=float(str(plane_dict[13].strip()))
+                #print('2a',xtd_a, 'b', plane_dict[30].strip(),'c')
+                #print('      ', xtd_b)
+            else:
+                #xtd_b=str(plane_dict[13].strip())
+                print('3a',xtd_b, 'b', plane_dict[13].strip(),'c')
+
             '''pos_age = int(float(str(plane_dict[29].strip())))
             if pos_age > 30:
                 alpha_age = 0.1
@@ -778,6 +810,57 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
                 ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
 
+
+
+
+
+            #if (dwana == 'WARNING' and 
+            if dziewiec != "RECEDING" and meters >= 0:
+                #if dziewiec != "" and meters >= 0:
+            
+                #print(xtd_a)
+                if xtd_b != '' and xtd_b != 0:
+                    #print(azi, xtd_a, 90-float(xtd_a)  )
+
+                    fontc_1 = {'color':  "black", 'size': 9, 'weight': 'heavy', 'family': 'monospace', }
+
+                    #ax.plot(  azi, 90-float(xtd_a),'+',markersize=15, markerfacecolor='none', markeredgecolor='white', alpha=1.)
+
+                    #ax.plot((azi,azi-np.radians(90)), (elunc, 90-float(xtd_a)),'--',markersize=10, color='white', lw=1,alpha=0.4)
+                    #ax.plot((azi,azi+np.radians(90)), (elunc, 90-float(xtd_a)),'--',markersize=10, color='white', lw=1,alpha=0.4)
+                    #C = math.degrees(math.acos(a/b))
+                    #B=  90 - C
+                    #if (aaz - track_1) >= 0:
+                    #    AZM1 = aaz + math.degrees(math.acos(xtd_b/distance))
+                    #else:
+                    #    AZM1 = aaz - math.degrees(math.acos(xtd_b/distance))
+                    #ax.plot(  np.radians(AZM1 ), 90-float(xtd_a),'+',markersize=15, markerfacecolor='none', markeredgecolor='white', alpha=1.)
+                    kosa = math.degrees(math.acos(float(xtd_b)/float(distance)))
+                    ###########################################################################3
+                    if 360 > aaz >= 270:
+                        if (aaz - track_2) > 180:
+                            AZM = aaz + kosa
+                        else:
+                            AZM = aaz - kosa
+                    elif 270 > aaz >= 180:
+                        if (aaz - track_2) > 180:
+                            AZM = aaz + kosa
+                        else:
+                            AZM = aaz - kosa
+                    elif 180 > aaz >= 90:
+                        if (aaz - track_2) > -180:
+                            AZM = aaz + kosa
+                        else:
+                            AZM = aaz - kosa
+                    elif 90 > aaz >= 0:
+                        if (aaz - track_2) > -180:
+                            AZM = aaz + kosa
+                        else:
+                            AZM = aaz - kosa
+                            
+                    ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=2, alpha=0.4)
+                    ax.plot(  np.radians(AZM ), 90-float(xtd_a),'o',markersize=15, markerfacecolor='none', markeredgecolor='green', alpha=1.)
+                    ax.text(  np.radians(AZM ), 90-float(xtd_a), '    \n   '+str(flight)+'    \n   '+str(xtd_b)+'km '+str(xtd_a)+deg+'    \n     '+str(aaz)+'/'+str(track_2)   , fontdict=fontc_1, alpha=1.) #
 
 
             
@@ -980,10 +1063,10 @@ class AsyncWrite(threading.Thread):
 
         #test3 = col_test(imcv)
         #if (test3 > 0):
-        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)	
+        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)  
         #    imcv = cv2.cvtColor(imcv, cv2.COLOR_GRAY2BGR)
         #elif (int(dataz7[0]) == 1):    
-        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)	
+        #    imcv = cv2.cvtColor(self.arr, cv2.COLOR_BGR2GRAY)  
         #    imcv = cv2.cvtColor(imcv, cv2.COLOR_GRAY2BGR)
 
         #im = Image.fromarray(imcv)

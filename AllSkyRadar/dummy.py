@@ -838,10 +838,17 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     kosa = math.degrees(math.acos(float(xtd_b)/float(distance)))
                     ###########################################################################3
                     if 360 > aaz >= 270:
-                        if (aaz - track_2) > 180:
-                            AZM = aaz + kosa
-                        else:
-                            AZM = aaz - kosa
+                        if track_2 > 180:
+                            if (aaz - track_2) < 180:
+                                AZM = aaz - kosa
+                            else:
+                                AZM = aaz + kosa
+                        else: # track_2 < 180
+                            if (aaz - track_2) > -180:
+                                AZM = aaz + kosa
+                            else:
+                                AZM = aaz - kosa
+
                     elif 270 > aaz >= 180:
                         if (aaz - track_2) > 180:
                             AZM = aaz + kosa
@@ -857,6 +864,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             AZM = aaz + kosa
                         else:
                             AZM = aaz - kosa
+
                             
                     ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=2, alpha=0.4)
                     ax.plot(  np.radians(AZM ), 90-float(xtd_a),'o',markersize=15, markerfacecolor='none', markeredgecolor='green', alpha=1.)

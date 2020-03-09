@@ -837,33 +837,65 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     #ax.plot(  np.radians(AZM1 ), 90-float(xtd_a),'+',markersize=15, markerfacecolor='none', markeredgecolor='white', alpha=1.)
                     kosa = math.degrees(math.acos(float(xtd_b)/float(distance)))
                     ###########################################################################3
+
                     if 360 > aaz >= 270:
-                        if track_2 > 180:
+                        if (aaz - track_2) > 180:
+                            AZM_case = 'a1'
+                            AZM = aaz + kosa
+                        else:
+                            AZM = aaz - kosa
+                            AZM_case = 'a2'
+                        '''
+                        if 360 > aaz >= 270:
+                        if track_2 < 180:
                             if (aaz - track_2) < 180:
                                 AZM = aaz - kosa
                             else:
                                 AZM = aaz + kosa
-                        else: # track_2 < 180
+                        else: # track_2 > 180
                             if (aaz - track_2) > -180:
                                 AZM = aaz + kosa
                             else:
                                 AZM = aaz - kosa
-
+                        '''
                     elif 270 > aaz >= 180:
-                        if (aaz - track_2) > 180:
-                            AZM = aaz + kosa
-                        else:
-                            AZM = aaz - kosa
+                        if track_2 > 180:
+                            if (aaz - track_2) < 0:
+                                AZM = aaz + kosa
+                                AZM_case = 'b1' # ok
+                            else:
+                                AZM = aaz - kosa
+                                AZM_case = 'b2'
+                        else: # track_2 < 180
+                            if (aaz - track_2)  >180:
+                                AZM = aaz + kosa
+                                AZM_case = 'b3' 
+                            else:
+                                AZM = aaz - kosa
+                                AZM_case = 'b4' # ok
+
                     elif 180 > aaz >= 90:
                         if (aaz - track_2) > -180:
                             AZM = aaz + kosa
+                            AZM_case = 'c1'
                         else:
                             AZM = aaz - kosa
+                            AZM_case = 'c2'
                     elif 90 > aaz >= 0:
-                        if (aaz - track_2) > -180:
-                            AZM = aaz + kosa
-                        else:
-                            AZM = aaz - kosa
+                        if track_2 > 180:
+                            if (aaz - track_2) > -180:
+                                AZM = aaz + kosa
+                                AZM_case = 'd1'
+                            else:
+                                AZM = aaz - kosa
+                                AZM_case = 'd2'
+                        else: # track_2 < 180
+                            if (aaz - track_2) > -180:
+                                AZM = aaz + kosa
+                                AZM_case = 'd3'
+                            else:
+                                AZM = aaz - kosa
+                                AZM_case = 'd4'
 
                             
                     ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=2, alpha=0.4)
@@ -986,6 +1018,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         #offset1 = float(dataz8[0])
 
         ax.set_theta_zero_location('N', offset=float(theta_corr))
+        #ax.set_theta_direction(-1)
         #ax.set_theta_zero_location('N', offset=offset1)
 
         ax.set_rlim(0,90)
@@ -1079,7 +1112,7 @@ class AsyncWrite(threading.Thread):
 
         #im = Image.fromarray(imcv)
         #test, test2, crop = tstasi178(im)
-
+        #imagCrop = Image.open('/tmp/AllSkyRadar/zwo_1080p.jpg')
         imagCrop = Image.new('RGB', (1080, 1080), color = str(bg_color))
         #imagCrop = Image.new('RGB', (2240, 2240), color = '#262626')
         #imagCrop = Image.new('RGB', (1080, 1080), color = '#262626')

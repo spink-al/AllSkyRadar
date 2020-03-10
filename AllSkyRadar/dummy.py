@@ -32,6 +32,8 @@ q_resize = Dummy_Conf.q_resize
 
 #tmpconf8 atm
 theta_corr  = Dummy_Conf.theta_corr
+theta_direction  = str(Dummy_Conf.theta_direction)
+
 delay_between_captures = Dummy_Conf.delay_between_captures
 
 #crop_x = Dummy_Conf.crop_x
@@ -187,14 +189,6 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         else:
             dataz=''
 
-        if os.path.isfile('/tmp/out1.txt'):
-            DataFileNameX='/tmp/out1.txt'
-            datafileX=open(DataFileNameX, 'r')
-            datazX=datafileX.readlines()
-            datafileX.close()
-        else:
-            datazX=''
-
         if not dataz:
             last_time_fw = 'N/A'
 
@@ -304,294 +298,6 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 #ax.text(x, y, 'Hello path effects world!', verticalalignment='bottom', horizontalalignment='left', fontdict=fontb, alpha=0.6)#, path_effects=[path_effects.withSimplePatchShadow()])
         
 ####################
-        for i,line in enumerate(datazX):
-            aktual_t1x = datetime.datetime.now()
-            #print line
-            plane_dict = line.split(',')
-            #print flight
-            #print plane_dict[1]
-            #print (plane_dict[pentry][3])
-            flight=str(plane_dict[1].strip())
-            if flight == '':
-                flight = str(plane_dict[0].strip())
-            if is_int_try(str(plane_dict[4].strip())):
-                meters=int(str(plane_dict[4].strip()))
-            elif is_float_try(str(plane_dict[4].strip())):
-                meters=int(float(str(plane_dict[4].strip())))
-            else:
-                meters=10000
-
-            distance=float(plane_dict[5].strip())
-
-            if is_int_try(str(plane_dict[11].strip())):
-                track=float(360-(270-int(str(plane_dict[11].strip()))))
-            else:
-                track = 0
-            azi=np.radians(float(plane_dict[6].strip()))
-            aaz=float(plane_dict[6].strip())
-            elev=90-float(plane_dict[7].strip())
-            elunc=90-float(plane_dict[7].strip())
-            #kolorek=str(plane_dict[pentry][8])
-            kolorek='#ff0000'
-            dziewiec=str(plane_dict[9].strip())
-            dwana=str(plane_dict[12].strip())
-            '''pos_age = int(float(str(plane_dict[29].strip())))
-            if pos_age > 30:
-                alpha_age = 0.1
-            elif pos_age > 20:
-                alpha_age = 0.2
-            elif pos_age > 15:
-                alpha_age = 0.3
-            elif pos_age > 10:
-                alpha_age = 0.4
-            else:
-                alpha_age = 0.6
-            '''
-            alpha_age = 0.8
-            alpha_ageB = 0.8
-
-            ##################### to bylo aktywne
-            loSep = -10
-            hiSep = 10
-            #if not plane_dict[22].strip() == '':
-            if is_float_try(str(plane_dict[20].strip())):
-                dist2mo1 = str(plane_dict[19].strip())
-                deg_missed1 = float(str(plane_dict[20].strip()))
-                if (loSep < float(deg_missed1) < hiSep):
-                        moon_s=dist2mo1+'km '+sols+' '+str(deg_missed1)+deg+' \n '
-                else:
-                        #moon_s='X n/a \n'
-                        moon_s=''
-                        #dist2mo+' o '+str(deg_missed)+deg+' \n '
-            else:
-                        deg_missed1 = ''
-                        #moon_s= 'X -- \n'
-                        moon_s= ''
-
-            if is_float_try(str(plane_dict[24].strip())):
-            #if not plane_dict[26].strip() == '':
-                dist2mo2 = str(plane_dict[23].strip())
-                deg_missed2 = float(str(plane_dict[24].strip()))
-                if (loSep < float(deg_missed2) < hiSep):
-                        sun_s=dist2mo2+'km '+luns+' '+str(deg_missed2)+deg+' \n '
-                else:
-                        #moon_s='X n/a \n'
-                        sun_s=''
-                        #dist2mo+' o '+str(deg_missed)+deg+' \n '
-            else:
-                        deg_missed2 = ''
-                        #sun_s= 'X -- \n'
-                        sun_s= ''
-
-            ##################### to bylo aktywne
-
-            #print flight,dziewiec, dwana
-
-            #########################
-            #
-            # marker_style = dict(linestyle=':', color='0.8', markersize=10,mfc="C0", mec="C0")
-            # marker_style.update(mec="None", markersize=15)
-            # marker = "$[$"+" "+"$]$"
-            # ax.plot(azi,elev, marker=marker, markersize=5, markerfacecolor='none', markeredgecolor=str(kolorek))
-            #
-            #########################
-
-            if aaz >= 0 and aaz < 90:
-                vert_al=str('top') ; hori_al=str('left')
-            elif aaz >= 90 and aaz < 180:
-                vert_al=str('bottom') ; hori_al=str('left')
-            elif aaz >= 180 and aaz < 270:
-                vert_al=str('bottom') ; hori_al=str('right')
-            elif aaz >= 270:
-                vert_al=str('top') ; hori_al=str('right')
-
-            #fonta = {'color':  "black", 'size': 12, 'weight': 'light', 'family': 'monospace', }
-            #fontb = {'color':  "black", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-            #fontc = {'color':  "black", 'size': 12, 'weight': 'heavy', 'family': 'monospace', }
-            fonta = {'color':  "black", 'size': 12, 'weight': 'light', 'family': 'monospace', }
-            fontb = {'color':  "black", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
-            fontc = {'color':  "black", 'size': 12, 'weight': 'heavy', 'family': 'monospace', }
-            #fonta['color'] = 'kupa'
-            #print fonta
-            
-            #pfff_minmax = (int(min_br) + int(max_br))/2
-            #if int(test2) > 90: 
-            #    #pfff_minmax:
-            #    white_1 = 'black'
-            #else:
-            white_1 = 'white'
-                
-
-            if meters < 5000:
-                #fonta['color'] = '#ff9900' ; fonta['size'] = '12'
-                fonta['color'] = str(white_1) ; fonta['size'] = '12'
-                fontb['color'] = '#ff9900' ; fonta['size'] = '12'
-            elif (dwana == 'WARNING' and dziewiec != "RECEDING") and (meters >= 5000):
-                #fonta['color'] = '#ff0000'
-                fonta['color'] = str(white_1)
-                fontb['color'] = '#ff0000'
-            elif (dwana == 'WARNING' and dziewiec == "RECEDING") and (meters >= 5000):
-                #fonta['color'] = '#660000'
-                fonta['color'] = str(white_1)
-                fontb['color'] = '#660000'
-            elif (dwana != 'WARNING' and dziewiec == "RECEDING") and (meters >= 5000):
-                #fonta['color'] = '#8000ff'
-                fonta['color'] = str(white_1)
-                fontb['color'] = '#8000ff'
-            else:
-                #fonta['color'] = '#ff00ff'
-                fonta['color'] = str(white_1)
-                fontb['color'] = '#ff00ff'
-
-            #moon_s='aaa'
-            if meters < 5000:
-                fonta['size'] = '12'
-                fontc['size'] = '12'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=1.0)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
-                #ax.text(azi,elunc, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-
-            elif (distance > 60) and (meters >= 5000):
-                fonta['size'] = '10'
-                fontc['size'] = '10'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=0.5)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-            elif (distance <= 60) and distance > 40 and (meters >= 5000):
-                fonta['size'] = '10'
-                fontc['size'] = '10'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=1.0)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-            elif (distance <= 40) and distance > 20 and (meters >= 5000):
-                fonta['size'] = '11'
-                fontc['size'] = '11'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=1.0)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-            elif (distance <= 20) and (meters >= 5000):
-                fonta['size'] = '11'
-                fontc['size'] = '11'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=1.0)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-            else:
-                fonta['size'] = '12'
-                fontc['size'] = '12'
-                ax.plot(azi,elunc,'o',markersize=5, markerfacecolor='none', markeredgecolor='green', alpha=1.0)
-                #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fontc, alpha=alpha_ageB)
-                #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
-
-
-
-            
-            azis        = []
-            elevis      = []
-            alphis      = []
-            #azis.append(azi)
-            #elevis.append(elev)
-            ############################## tranzyty
-            if is_float_try(str(deg_missed1)):
-             if (loSep < float(deg_missed1) < hiSep):
-
-                fut_alt = str(plane_dict[22].strip())
-                fut_az  =float( str(plane_dict[21].strip()))
-                #print fut_az, fut_alt
-                if not fut_az == 0:
-                    object1 = str(plane_dict[27].strip())
-                    if not object1  == '':
-                        if object1 == 'Moon':
-                            v1 = ephem.Moon(gatech)
-                        elif object1 == 'Sun':
-                            v1 = ephem.Sun(gatech)
-                        elif object1 == 'Mars':
-                            v1 = ephem.Mars(gatech)
-                        elif object1 == 'Jupiter':
-                            v1 = ephem.Jupiter(gatech)
-                        elif object1 == 'Saturn':
-                            v1 = ephem.Saturn(gatech)
-                        else:
-                            v1 = ephem.star(object1)
-                            v1.compute(gatech)
-
-                    tst_x=[v1.az, math.radians(float(fut_az)), azi]
-                    tst_y=[90-(round(math.degrees(v1.alt),1)), 90-float(fut_alt), elunc]
-                    ax.plot(tst_x,tst_y,'--',markersize=10, color='green', lw=1,alpha=0.4)
-
-            if is_float_try(str(deg_missed2)):
-             if (loSep < float(deg_missed2) < hiSep):
-
-                fut_alt = str(plane_dict[26].strip())
-                fut_az  =float( str(plane_dict[25].strip()))
-                #print fut_az, fut_alt
-                if not fut_az == 0:
-                    object2 = str(plane_dict[28].strip())
-                    if not object2  == '':
-                        if object2 == 'Moon':
-                            v2 = ephem.Moon(gatech)
-                        elif object2 == 'Sun':
-                            v2 = ephem.Sun(gatech)
-                        elif object2 == 'Mars':
-                            v2 = ephem.Mars(gatech)
-                        elif object2 == 'Jupiter':
-                            v2 = ephem.Jupiter(gatech)
-                        elif object2 == 'Saturn':
-                            v2 = ephem.Saturn(gatech)
-                        else:
-                            v2 = ephem.star(object2)
-                            v2.compute(gatech)
-
-                    tst_x=[v2.az, math.radians(float(fut_az)), azi]
-                    tst_y=[90-(round(math.degrees(v2.alt),1)), 90-float(fut_alt), elunc]
-                    ax.plot(tst_x,tst_y,'--',markersize=10, color='green', lw=1,alpha=0.4)
-
-                #    tst_x=[vma.az, azi]
-                #    tst_y=[90-(round(math.degrees(vma.alt),1)), elunc]
-                #ax.plot(tst_x,tst_y,'--',markersize=10, color='white', lw=1,alpha=0.8)
-            ############################## tranzyty
-
-            #'''
-            if int(plot_trails) == 1:
-                tmp_i = 0 
-                if not plane_dict[15].strip() == '':
-                    words1 = plane_dict[15]
-                    words2 = plane_dict[16]
-                    plane_pos1 = words1.split(';')
-                    plane_pos2 = words2.split(';')
-                    plane_pos_len = len(plane_pos1)
-                    for i,word in enumerate(plane_pos1):
-                        if not plane_pos1[i].strip() == '':
-
-                            aaz1a=np.radians(float(plane_pos1[i].strip()))
-                            ele1a=90-float(plane_pos2[i].strip())
-                            azis.append(aaz1a)
-                            elevis.append(ele1a)
-
-                            if ((plane_pos_len-1) > i > 0):
-                                #    #alpha_hist = 0.6
-                                #else:
-                                #alpha_hist = round(float(1.0/float(i/5.0)),2)
-
-                                alpha_hist = round(1/float(plane_pos_len/float(i)),2)
-                                if int(alhablend_trails) == 1:
-                                    ax.plot((azis[i-1],azis[i]),(elevis[i-1], elevis[i]),'-',markersize=10, color='green', lw=1, alpha=(alpha_hist/2))
-
-                            else:
-                                alpha_hist = 1
-                            alphis.append(alpha_hist)    
-                            tmp_i = i
-                    #for i in
-                    #ax.plot((azis[0],azis[tmp_i]),(elevis[0], elevis[tmp_i]),'-',markersize=10, color=fontb['color'], lw=1, alpha=0.3) # , alpha=(alphis[tmp_i]/2))            
-                    if not int(alhablend_trails) == 1:
-                        ax.plot((azis[0:tmp_i+1]),(elevis[0:tmp_i+1]),'.',markersize=3, color='green', lw=1, alpha=0.9) # , alpha=(alphis[tmp_i]/2))            
-
-
 
 ################3
         for i,line in enumerate(dataz):
@@ -657,6 +363,19 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 #xtd_b=str(plane_dict[13].strip())
                 print('3a',xtd_b, 'b', plane_dict[13].strip(),'c')
 
+            if is_int_try(str(plane_dict[14].strip())):
+                velocity=float(str(plane_dict[14].strip()))
+                #print('1a',velocity, 'b', plane_dict[14].strip(),'c')
+
+            elif is_float_try(str(plane_dict[14].strip())):
+                velocity=float(str(plane_dict[14].strip()))
+                #print('2a',velocity, 'b', plane_dict[14].strip(),'c')
+                #print('      ', velocity)
+            else:
+                velocity=str(plane_dict[14].strip())
+                #print('3a',xtd_a, 'b', plane_dict[14].strip(),'c')
+
+
             '''pos_age = int(float(str(plane_dict[29].strip())))
             if pos_age > 30:
                 alpha_age = 0.1
@@ -717,15 +436,26 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             # ax.plot(azi,elev, marker=marker, markersize=5, markerfacecolor='none', markeredgecolor=str(kolorek))
             #
             #########################
-
-            if aaz >= 0 and aaz < 90:
-                vert_al=str('top') ; hori_al=str('left')
-            elif aaz >= 90 and aaz < 180:
-                vert_al=str('bottom') ; hori_al=str('left')
-            elif aaz >= 180 and aaz < 270:
-                vert_al=str('bottom') ; hori_al=str('right')
-            elif aaz >= 270:
-                vert_al=str('top') ; hori_al=str('right')
+            if str(theta_direction) == "1":
+                #print("1 "+str(theta_direction))
+                if aaz >= 0 and aaz < 90:
+                    vert_al=str('top') ; hori_al=str('left')
+                elif aaz >= 90 and aaz < 180:
+                    vert_al=str('bottom') ; hori_al=str('left')
+                elif aaz >= 180 and aaz < 270:
+                    vert_al=str('bottom') ; hori_al=str('right')
+                elif aaz >= 270:
+                    vert_al=str('top') ; hori_al=str('right')
+            elif str(theta_direction) == "-1":
+                #print("-1 "+str(theta_direction))
+                if aaz >= 0 and aaz < 90:
+                    vert_al=str('top') ; hori_al=str('right')
+                elif aaz >= 90 and aaz < 180:
+                    vert_al=str('bottom') ; hori_al=str('right')
+                elif aaz >= 180 and aaz < 270:
+                    vert_al=str('bottom') ; hori_al=str('left')
+                elif aaz >= 270:
+                    vert_al=str('top') ; hori_al=str('left')
 
             #fonta = {'color':  "black", 'size': 12, 'weight': 'light', 'family': 'monospace', }
             #fontb = {'color':  "black", 'size': 12, 'weight': 'bold', 'family': 'monospace', }
@@ -819,7 +549,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 #if dziewiec != "" and meters >= 0:
             
                 #print(xtd_a)
-                if xtd_b != '' and xtd_b != 0:
+                if (xtd_b != '' and 100 > xtd_b > 0 and 150 > distance > 0):
                     #print(azi, xtd_a, 90-float(xtd_a)  )
 
                     fontc_1 = {'color':  "black", 'size': 9, 'weight': 'heavy', 'family': 'monospace', }
@@ -837,6 +567,17 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     #ax.plot(  np.radians(AZM1 ), 90-float(xtd_a),'+',markersize=15, markerfacecolor='none', markeredgecolor='white', alpha=1.)
                     kosa = math.degrees(math.acos(float(xtd_b)/float(distance)))
                     ###########################################################################3
+                    
+                    dst2AZM = math.sqrt(float(distance)**2 - float(xtd_b)**2)
+                    if not velocity == '':
+                        velocity = int(velocity)
+                        sure_vel='= '
+                    else:
+                        velocity = 900 # only used for transit countdown
+                        sure_vel='~ '
+                    delta_seconds = (dst2AZM / velocity)*3600
+                    delta_minutes = delta_seconds // 60
+                    delta_AZM = '%02dm%02ds' % (delta_minutes, delta_seconds % 60)
 
                     if 360 > aaz >= 270:
                         if (aaz - track_2) > 180:
@@ -869,18 +610,27 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                         else: # track_2 < 180
                             if (aaz - track_2)  >180:
                                 AZM = aaz + kosa
-                                AZM_case = 'b3' 
+                                AZM_case = 'b3' # ok
                             else:
                                 AZM = aaz - kosa
                                 AZM_case = 'b4' # ok
 
                     elif 180 > aaz >= 90:
-                        if (aaz - track_2) > -180:
+                        if track_2 > 270:
+                            if (aaz - track_2) > -180:
+                                AZM = aaz + kosa
+                                AZM_case = 'c1'
+                            else:
+                                AZM = aaz - kosa
+                                AZM_case = 'c2' # meh1
+                        else: # <270
+                            #if (aaz - track_2) < -180:
+                            #    AZM = aaz + kosa
+                            #    AZM_case = 'c3'
+                            #else:
                             AZM = aaz + kosa
-                            AZM_case = 'c1'
-                        else:
-                            AZM = aaz - kosa
-                            AZM_case = 'c2'
+                            AZM_case = 'c4' #meh1 zmienione na +
+
                     elif 90 > aaz >= 0:
                         if track_2 > 180:
                             if (aaz - track_2) > -180:
@@ -897,11 +647,38 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                                 AZM = aaz - kosa
                                 AZM_case = 'd4'
 
+                    if str(theta_direction) == "1":
+                        #print("1 "+str(theta_direction))                    
+                        if AZM >= 0 and AZM < 90:
+                            vert_al1=str('top') ; hori_al1=str('left')
+                        elif AZM >= 90 and AZM < 180:
+                            vert_al1=str('bottom') ; hori_al1=str('left')
+                        elif AZM >= 180 and AZM < 270:
+                            vert_al1=str('bottom') ; hori_al1=str('right')
+                        elif AZM >= 270:
+                            vert_al1=str('top') ; hori_al1=str('right')
+                        else:
+                            vert_al1=str('top') ; hori_al1=str('right')
+                    elif str(theta_direction) == "-1":
+                        #print("-1 "+str(theta_direction))
+                        if AZM >= 0 and AZM < 90:
+                            vert_al1=str('top') ; hori_al1=str('right')
+                        elif AZM >= 90 and AZM < 180:
+                            vert_al1=str('bottom') ; hori_al1=str('right')
+                        elif AZM >= 180 and AZM < 270:
+                            vert_al1=str('bottom') ; hori_al1=str('left')
+                        elif AZM >= 270:
+                            vert_al1=str('top') ; hori_al1=str('left')
+                        else:
+                            vert_al1=str('top') ; hori_al1=str('left')
+                            
+                        
+                        
                             
                     ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=2, alpha=0.4)
                     ax.plot(  np.radians(AZM ), 90-float(xtd_a),'o',markersize=15, markerfacecolor='none', markeredgecolor='green', alpha=1.)
-                    ax.text(  np.radians(AZM ), 90-float(xtd_a), '    \n   '+str(flight)+'    \n   '+str(xtd_b)+'km '+str(xtd_a)+deg+'    \n     '+str(aaz)+'/'+str(track_2)   , fontdict=fontc_1, alpha=1.) #
-
+                    ax.text(  np.radians(AZM ), 90-float(xtd_a), '    \n   '+str(flight)+'    \n   '+str(xtd_b)+'km '+str(xtd_a)+'/'+str(round(AZM,1))+deg+' '+str(sure_vel)+str(delta_AZM)+\
+                    '    \n   '+str(aaz)+'/'+str(track_2)+deg+" "+str(AZM_case), verticalalignment=vert_al1, horizontalalignment=hori_al1, fontdict=fontc_1, alpha=1.) #
 
             
             azis        = []
@@ -1018,7 +795,8 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         #offset1 = float(dataz8[0])
 
         ax.set_theta_zero_location('N', offset=float(theta_corr))
-        #ax.set_theta_direction(-1)
+
+        ax.set_theta_direction(int(theta_direction))
         #ax.set_theta_zero_location('N', offset=offset1)
 
         ax.set_rlim(0,90)
@@ -1154,6 +932,7 @@ def read_conf():
     global q_resize
     #global q_fullsize
     global theta_corr
+    global theta_direction
     global delay_between_captures
     global crop_x
     global crop_y
@@ -1194,6 +973,7 @@ def read_conf():
     q_resize = Dummy_Conf.q_resize
     #q_fullsize = Dummy_Conf.q_fullsize
     theta_corr  = Dummy_Conf.theta_corr
+    theta_direction  = Dummy_Conf.theta_direction
     #cam_azimuth  = Dummy_Conf.cam_azimuth
     delay_between_captures = Dummy_Conf.delay_between_captures
 
@@ -1237,6 +1017,8 @@ def Main():
     global q_resize
     #global q_fullsize
     global theta_corr
+    global theta_direction
+    
     global delay_between_captures
     global crop_x
     global crop_y

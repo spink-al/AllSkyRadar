@@ -15,6 +15,9 @@ q_resize="85"
 # theta azimuth correction  (rotation of plot)
 # but something strange happens when less then -8.0
 theta_corr="0.0"
+# 1 for "stellarium like view", -1 for "map view"
+theta_direction="1"
+
 # horizon calibration layer (plot borders down/up/left/right vs image)
 #top_
 

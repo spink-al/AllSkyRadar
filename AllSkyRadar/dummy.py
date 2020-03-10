@@ -623,6 +623,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             else:
                                 AZM = aaz - kosa
                                 AZM_case = 'c2' # meh1
+                        elif 0 <track_2 < 180:
+                            AZM = aaz - kosa
+                            AZM_case = 'c3' #meh1 zmienione na +
                         else: # <270
                             #if (aaz - track_2) < -180:
                             #    AZM = aaz + kosa
@@ -630,6 +633,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             #else:
                             AZM = aaz + kosa
                             AZM_case = 'c4' #meh1 zmienione na +
+
 
                     elif 90 > aaz >= 0:
                         if track_2 > 180:

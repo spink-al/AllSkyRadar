@@ -1,0 +1,289 @@
+[
+{
+"name":"time_corr",
+"default":"1",
+"description":"",
+"label":"Time correction 1",
+"type":"checkbox"
+},
+{
+"name":"minutes_add",
+"default":"-60",
+"description":"",
+"label":"by",
+"type":"number"
+},
+{
+"name":"time_corr_mlat",
+"default":"1",
+"description":"",
+"label":"Time correction 2",
+"type":"checkbox"
+},
+{
+"name":"minutes_add_mlat",
+"default":1,
+"description":"",
+"label":"by",
+"type":"number"
+},
+{
+"name":"gen_term",
+"default":"0",
+"description":"",
+"label":"Terminal table",
+"type":"checkbox"
+},
+{
+"name":"out_path",
+"default":"/tmp/out.txt",
+"description":"",
+"label":"Data output path",
+"type":"text"
+},
+{
+"name":"gen_html",
+"default":"1",
+"description":"",
+"label":"HTML Table",
+"type":"checkbox"
+},
+{
+"name":"out_path_html",
+"default":"/tmp/out6.html",
+"description":"",
+"label":"html output path",
+"type":"text"
+},
+{
+"name":"gen_html_snd",
+"default":"1",
+"description":"",
+"label":"Play countdown",
+"type":"checkbox"
+},
+{
+"name":"out_path_html_snd",
+"default":"/tmp/out7.html",
+"description":"",
+"label":"Play html output path",
+"type":"text"
+},
+{
+"name":"metar_active",
+"default":"1",
+"description":"",
+"label":"Check METAR for pressure",
+"type":"checkbox"
+},
+{
+"name":"metar_path",
+"default":"/tmp/metar.txt",
+"description":"",
+"label":"metar file path",
+"type":"text"
+},
+{
+"name":"pressure",
+"default":"1013",
+"description":"",
+"label":"Defaul pressure",
+"type":"number"
+},
+{
+"name":"ignore_pressure",
+"default":"1",
+"description":"",
+"label":"Ignore all pressure",
+"type":"checkbox"
+},
+{
+"name":"near_airport_code",
+"default":"EPPO",
+"description":"",
+"label":"Near airport code",
+"type":"text"
+},
+{
+"name":"near_airport_elevation",
+"default":94,
+"description":"",
+"label":"Near airport elevation",
+"type":"number"
+},
+{
+"name":"display_limit",
+"default":250,
+"description":"",
+"label":"Ignore planes further than",
+"type":"number"
+},
+{
+"name":"warning_distance",
+"default":249,
+"description":"",
+"label":"Issue warning for planes closer than",
+"type":"number"
+},
+{
+"name":"alert_duplicate_minutes",
+"default":20,
+"description":"",
+"label":"Pfff N/A",
+"type":"number"
+},
+{
+"name":"alert_distance",
+"default":35,
+"description":"",
+"label":"Alert distance 1",
+"type":"number"
+},
+{
+"name":"xtd_tst",
+"default":40,
+"description":"",
+"label":"Alert distance 2",
+"type":"number"
+},
+{
+"name":"transit_separation_sound_alert",
+"default":"1.5",
+"description":"",
+"label":"Minimum separation for sound alert",
+"type":"text"
+},
+{
+"name":"transit_separation_REDALERT_FG",
+"default":20,
+"description":"",
+"label":"Minimum separation for Red alert",
+"type":"number"
+},
+{
+"name":"transit_separation_GREENALERT_FG",
+"default":5,
+"description":"",
+"label":"Minimum separation for Green alert",
+"type":"number"
+},
+{
+"name":"transit_separation_notignored",
+"default":90,
+"description":"a",
+"label":"Don't touch",
+"type":"number"
+},
+{
+"name":"minimum_alt_transits",
+"default":5,
+"description":"",
+"label":"Minimum Sun/Moon alt for transit alerts",
+"type":"number"
+},
+{
+"name":"transit_history_log",
+"default":"0",
+"description":"",
+"label":"Transit history log",
+"type":"checkbox"
+},
+{
+"name":"transit_history_log_path",
+"default":"/tmp/tr.txt",
+"description":"",
+"label":"Transit history log path",
+"type":"text"
+},
+{
+"name":"sun_tr_sound",
+"default":"1",
+"description":"",
+"label":"Sun transits sound",
+"type":"checkbox"
+},
+{
+"name":"moon_tr_sound",
+"default":"1",
+"description":"",
+"label":"Moon transits sound",
+"type":"checkbox"
+},
+{
+"name":"terminal_beeps",
+"default":"0",
+"description":"",
+"label":"Terminal beeping",
+"type":"checkbox"
+},
+{
+"name":"entering_sound",
+"default":"0",
+"description":"",
+"label":"Terminal beep on entering in range",
+"type":"checkbox"
+},
+{
+"name":"detected_sound",
+"default":"0",
+"description":"",
+"label":"Terminal beep on new warnings",
+"type":"checkbox"
+},
+{
+"name":"min_t_sound",
+"default":1.0,
+"description":"",
+"label":"How often to beep",
+"type":"number"
+},
+{
+"name":"heatmap_latlon_log",
+"default":"0",
+"description":"",
+"label":"Data for heatmap",
+"type":"checkbox"
+},
+{
+"name":"heatmap_latlon_log_path",
+"default":"/tmp/_heatmap_asi.dat",
+"description":"",
+"label":"Path of heatmap data",
+"type":"text"
+},
+{
+"name":"time_corr_ephem",
+"default":"0",
+"description":"",
+"label":"Time correction for ephem",
+"type":"checkbox"
+},
+{
+"name":"minutes_add_ephem",
+"default":0,
+"description":"",
+"label":"by minutes",
+"type":"number"
+},
+
+{
+"name":"typeaaa",
+"default":"1",
+"description":"Choose between Color (RGB24) or Grayscale (RAW8, RAW16). 16 bits only works with PNG extension",
+"label":"Example selector",
+"type":"select",
+"options": [
+	{"value": "0", "label": "RAW8"},
+	{"value": "1", "label": "RGB24"},
+	{"value": "2", "label": "RAW16"}
+]
+},
+
+{
+"name":"fontcoloraaaa",
+"default":"255 255 255",
+"description":"BGR value of text color. 0 to 255 for each channel",
+"label":"Example Font Color",
+"type":"text"
+}
+]

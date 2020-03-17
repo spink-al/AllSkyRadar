@@ -1,0 +1,28 @@
+<html>
+
+    <head>
+        <script type="text/javascript">
+    
+            var container = document.getElementById('iframe-container');
+            var iframe2 = document.createElement('iframe');
+            iframe2.src = 'out6.html';
+            iframe2.style.visibility = 'hidden';
+            container.appendChild(iframe2);
+            container.removeChild(container.getElementsByTagName('iframe')[0]);
+            iframe2.style.visibility = 'visible';
+	</script>
+    </head>
+
+    <body bgcolor="#000000">
+    <iframe src="out7.html" style="display: none;"></iframe>
+
+    <div id="iframe-container">
+	    <iframe src="out6.html" style="width: 900px; height: 495px; top: 505px; left: 1005px; display: block; position: absolute;z-index:1;" frameborder=0></iframe>
+    </div>
+
+    <div id="iframe2">
+	    <iframe src="out6.html" style="width: 900px; height: 495px; top: 505px; left: 1005px; display: block; position: absolute;z-index:1;" frameborder=0></iframe>
+    </div>
+	
+    </body>
+</html>

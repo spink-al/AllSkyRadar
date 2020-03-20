@@ -1,10 +1,14 @@
 #!/bin/bash
-sudo cp -R html /var/www
+
 sudo mkdir /etc/raspap
 sudo mkdir /var/www/html/html_wzzak_bak
 
+
+
 sudo cp -R etc/* /etc/raspap
-sudo cp html_wzzak_bak/* /var/www/html/html_wzzak_bak
+sudo cp -R html /var/www
+sudo cp -R html_wzzak_bak/* /var/www/html/html_wzzak_bak
+
 sudo chown -R www-data:www-data /etc/raspap/
 sudo chown -R www-data:www-data /var/www/html/
 

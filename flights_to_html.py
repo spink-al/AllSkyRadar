@@ -21,7 +21,7 @@ v3.20200311 (web)
 
 
 v0.2
-- try/except for plane lat/lon in MSG 3
+- try/except for aircraft lat/lon in MSG 3
 
 v0.1
 - Color console realtime display Az/Alt
@@ -65,8 +65,25 @@ from math import atan2, sin, cos, acos, radians, degrees, atan, asin, sqrt, isna
 import json
 
 #import flight_warning_Pressure
+deg = u'\xb0'
+uus = u'\xb5s'
+
+jups = u"\u2643"
+mars = u"\u2642"
+vens = u"\u2640"
+sats = u"\u2644"
 sols = u"\u2609"
 luns = u"\u263d"
+
+deg_html = '&#xb0'
+uus_html = '&#xb5s'
+
+jups_html = "&#x2643"
+mars_html = "&#x2642"
+vens_html = "&#x2640"
+sats_html = "&#x2644"
+sols_html = "&#x2609"
+luns_html = "&#x263d"
 
 with open('/etc/raspap/location_settings.json') as f:
     LOCATION_CONF = json.load(f)
@@ -80,6 +97,11 @@ with open('/etc/raspap/fw_settings.json') as f:
 
 #exit()
 last_sekundy = -1
+int_counter_1 = 0
+int_counter_2 = 0
+int_counter_3 = 0
+int_counter_4 = 0
+
 footer=''
 if os.name == 'nt':
     print(os.name)
@@ -104,6 +126,7 @@ else:
 
 
 ignore_pressure = int(FW_CONF['ignore_pressure'])
+ignore_my_elevation = int(FW_CONF['ignore_my_elevation'])
 
 my_lat = float(LOCATION_CONF['MY_LAT'])
 my_lon = float(LOCATION_CONF['MY_LON'])
@@ -123,15 +146,18 @@ gen_html_snd = int(FW_CONF['gen_html_snd'])
 
 gen_term = int(FW_CONF['gen_term'])
 
+sel_obj_A = str(FW_CONF['sel_obj_A'])
+sel_obj_B = str(FW_CONF['sel_obj_B'])
+
 
 print( "Starting...")
 started = datetime.datetime.now()
 
 
-deg = u'\xb0'
+#deg = u'\xb0'
 earth_R = 6371
-sols = u"\u2609"
-luns = u"\u263d"
+#sols = u"\u2609"
+#luns = u"\u263d"
 
 #TERMINAL COLORS
 REDALERT        = '\x1b[1;37;41m'
@@ -513,7 +539,14 @@ def pressure_corr(elevation):
     global pressure
 
     if ignore_pressure == 1:
-        elevation=int(elevation)
+        if ignore_my_elevation == 1:
+            elevation=int(elevation)
+        else:
+            if elevation > 6500:
+                my_elevation_local = my_elevation * 3.28084 # why? # -90 ## taka sama wysokosc punktu obserwacji n.p.m jak pas na EPPO
+                elevation=int(elevation) - my_elevation_local
+            else:
+                elevation = elevation - (my_elevation_local - near_airport_elevation_local)
     else:
         elevation=int(elevation)
         pressure = int(get_metar_press())
@@ -525,8 +558,14 @@ def pressure_corr(elevation):
         if elevation > 6500: # m or ft at this stage? 
 
             # elev > 6500m altimeters calibrated to 1013hPa
-            elevation = elevation + ((1013 - pressure)*30) # now it's missing diff to my_elev!?!?
             #my_elevation = my_elevation_const #  wtf why? # my_elev was somewhere set to airport elev
+            
+            ################################################################################################################
+            # THIS SEEMS TO BE THE GOLD, # FOR TESTS NOW
+            elevation = (elevation + ((1013 - pressure)*30)) - my_elevation_local # now it's missing diff to my_elev!?!?
+            ################################################################################################################
+
+            #elevation = elevation + ((1013 - pressure)*30) # now it's missing diff to my_elev!?!?
 
         # elif, transition zone, but fok et
         else:
@@ -537,8 +576,9 @@ def pressure_corr(elevation):
             # todo
             #near_airport_elevation
             # probably this one is correct +/- diff between elev of observation point and airport
+            
+            
             elevation = elevation - (my_elevation_local - near_airport_elevation_local)
-
 
             #elevation - ((1013 - pressure)*30)) - my_elevation)
             #elevation = elevation #- ((1013 - pressure)*30) - my_elevation)
@@ -1060,6 +1100,16 @@ def countdown_m(sekundy, countdown_licznik):
 # Tabela TERMINAL
 ##########################################################################################################################################################
 
+def sekundy2minsec(seconds_in):
+    delta_seconds_1 = int(seconds_in)
+    delta_minutes_1 = delta_seconds_1 // 60
+    if delta_minutes_1 >= 1:
+        delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
+    else:
+        delta_1 = '%02s %02ds' % ("  ", delta_seconds_1 % 60)
+    
+    #delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
+    return str(delta_1)
 
 
 def tabela_terminal():
@@ -1074,8 +1124,34 @@ def tabela_terminal():
         gatech.date = ephem.now()
     
     # vm for right table slot, vs for left table slot 
-    vs = ephem.Moon(gatech)
-    vm = ephem.Sun(gatech)
+    #print(sel_obj_A,sel_obj_B)
+    if sel_obj_A == "Sun":
+        vs = ephem.Sun(gatech)
+    elif sel_obj_A == "Moon":
+        vs = ephem.Moon(gatech)
+    elif sel_obj_A == "Jupiter":
+        vs = ephem.Jupiter(gatech)
+    elif sel_obj_A == "Saturn":
+        vs = ephem.Saturn(gatech)
+    elif sel_obj_A == "Mars":
+        vs = ephem.Mars(gatech)
+    elif sel_obj_A == "Venus":
+        vs = ephem.Venus(gatech)
+
+    if sel_obj_B == "Sun":
+        vm = ephem.Sun(gatech)
+    elif sel_obj_B == "Moon":
+        vm = ephem.Moon(gatech)
+    elif sel_obj_B == "Jupiter":
+        vm = ephem.Jupiter(gatech)
+    elif sel_obj_B == "Saturn":
+        vm = ephem.Saturn(gatech)
+    elif sel_obj_B == "Mars":
+        vm = ephem.Mars(gatech)
+    elif sel_obj_B == "Venus":
+        vm = ephem.Venus(gatech)
+    #vs = ephem.Moon(gatech)
+    #vm = ephem.Sun(gatech)
     
     # can be used via star name like this: 
     # vs = ephem.star('Polaris')
@@ -1096,12 +1172,12 @@ def tabela_terminal():
         last_t_terminal = aktual_t
 
 
-        print('\033c'+ " Flight info -----------|-------|Pred. closest   |-- Current Az/Alt ---|--- Transits: "+ str(vs.name) +" " +str(obj_B_az) +" "+ str(obj_B_alt) +'     &  '+ str(vm.name)+" "+ str(obj_A_az)+" "+ str(obj_A_alt)+ '')
-        print( '{:9} {:>6} {:>6} {} {:>5} {} {:>6} {:>7} {} {:>5} {:>6} {:>5} {} {:>7} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {:>7} {} {:>5}'.format(\
-        ' icao or', ' (m)', '(d)', '|', '(km)', '|', '(km)', '(d)', '|', '(d)', '(d)', '(l)', ' |', '(d)', '(km)', '(km)', '   (s)', '|', '(d)', '(km)', '(km)', '   (s)', ' |', '(s)'))
-        print( '{:9} {:>6} {:>6} {} {:>5} {} {:>6} {:>7} {} {:>5} {:>6} {:>5} {} {:>7} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {:>7} {} {:>5}'.format(\
-        ' flight', 'elev', 'trck', '|', 'dist', '|', '[warn]', '[Alt]', '|', 'Alt', 'Azim', 'Azim', ' |', 'Sep', 'p2x', 'h2x', 'time2X', '|', 'Sep', 'p2x', 'h2x', 'time2X', ' |', 'age / latlon'))
-        print( "------------------------|-------|----------------|---------------------|----------------------------------|----------------------------------|-------|-------")
+        print('\033c'+ " Flight info:           | Current:                   | Predictions:                     | Trans: "+ str(vs.name) +" " +str(obj_B_az) +" "+ str(obj_B_alt) +'  &  '+ str(vm.name)+" "+ str(obj_A_az)+" "+ str(obj_A_alt)+ '')
+        print( '{:9} {:>6} {:>6} {} {:>5}  {:>5} {:>6} {:>5} {} {:>6} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {} {:>5}'.format(\
+        ' icao or', ' (m)', '(d)', '|', '(km)', '(d)', '(d)', '(l)', ' |', '(km)', '(d)', '(d)', 'time2', ' |', '(d)', '(km)', 'time2', '|', '(d)', '(km)', 'time2', ' |', '(s)'))
+        print( '{:9} {:>6} {:>6} {} {:>5} {:>5} {:>6} {:>5} {} {:3} {:<5} {:>7} {:>9} {} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {} {:>5}'.format(\
+        ' flight', 'elev', 'trck', '|', 'dist', 'Alt', 'Azim', 'Azim', '  |', '[ warn ]', '[ Alt', 'Az ]', 'closest', '|', 'Sep', 'h2x', str(vs.name), '|', 'Sep', 'h2x', str(vm.name), ' |', 'age / latlon'))
+        print( "------------------------|----------------------------|----------------------------------|--------------------------|--------------------------|-------|-------")
 
         ## Subloop through all entries
         #with open(out_path_html,'w') as tsttxt:
@@ -1137,11 +1213,9 @@ def tabela_terminal():
                     # 1st section
                     if plane_dict[pentry][1] != "":
                         wuersz += '{} {:7} {}'.format(YELLOW, str(plane_dict[pentry][1]), RESET)                                                 ##flight
-                        #zapis2 +=  '<tr><td class="ytext">'+str(plane_dict[pentry][1])+'</td>'                                                 ##flight
                         
                     else:
                         wuersz += '{} {:7} {}'.format(RESET, str(pentry), RESET)                            ##flight
-                        #zapis2 +=  '<tr><td>'+str(pentry)+'</td>'                                                 ##flight
                     
                     if is_float_try(plane_dict[pentry][4]):
                         elevation=int(plane_dict[pentry][4])
@@ -1149,16 +1223,35 @@ def tabela_terminal():
                         elevation=9999
 
                     wuersz += '{} {:>6} {}'.format(elev_col(elevation), str(elevation),RESET)     ##elev
-                    #zapis2 += '<td '+str(elev_col_2(elevation))+'>'+str(elevation)+'</td>'
 
                     wuersz += '{:>5}'.format(str(plane_dict[pentry][11]))                                                ## trck
-                    #zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>'
 
                     wuersz += '  |'
                     wuersz += '{} {:>5} {}'.format(dist_col(plane_dict[pentry][5]), str(plane_dict[pentry][5]),RESET)    ## dist
-                    #zapis2 += '<td '+dist_col_2(plane_dict[pentry][5])+'>'+str(plane_dict[pentry][5])+'</td>'
 
-                    wuersz += '|'
+                    # Current altitude in degrees
+                    wuersz += '{} {:>5} {}'.format(alt_col(plane_dict[pentry][7]), str(plane_dict[pentry][7]),RESET)    ## Alt
+
+
+                    # x/!/o latest msg age in pictograms :S (msg type 3 with position ())
+                    if diff_seconds >= 999:
+                        wuersz += '{}'.format(RED+str("x") +RESET)    
+                    elif diff_seconds > 30:
+                        wuersz += '{}'.format(RED+str("!") +RESET)    
+                    elif diff_seconds > 15:
+                        wuersz += '{}'.format(YELLOW+ str("!")+ RESET)    
+                    elif diff_seconds > 10:
+                        wuersz += '{}'.format(GREENFG+ str("!")+ RESET)    
+                    else:
+                        wuersz += '{}'.format(GREENFG+str("o") +RESET)    
+                    
+                    wuersz += '{:>6}'.format(str(plane_dict[pentry][6]))                                                ## Az    
+                    
+                    wuersz += '{:>6}'.format(str(wind_deg_to_str1(plane_dict[pentry][6])))                                ## news
+
+                    
+
+                    wuersz += ' | '
 
 
                     # Predicted closest altitude in degrees
@@ -1177,82 +1270,38 @@ def tabela_terminal():
                     # Predicted closest dissance in km
                     if (plane_dict[pentry][12] == 'WARNING'):
                         if (plane_dict[pentry][9] == "RECEDING" or plane_dict[pentry][8] == "LEAVING"):
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RED, str( plane_dict[pentry][13]),RESET, str(']')) 
-                            #zapis2 += '<td class="rtext">['+str(plane_dict[pentry][13])+']</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RED, str( plane_dict[pentry][13]),RESET, str(' ]')) 
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(altitudeX),RESET, str(']'))    # kolorowanie dla aktualnej alt
-                            #zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(plane_dict[pentry][7]),RESET)    # kolorowanie dla aktualnej alt
 
                         elif (str(plane_dict[pentry][9]) == "APPROACHING"):
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),REDALERT, str( plane_dict[pentry][13]),RESET, str(']'))
-                            #zapis2 += '<td class="rrtext">['+str(plane_dict[pentry][13])+']</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),REDALERT, str( plane_dict[pentry][13]),RESET, str(' ]'))
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                            #zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET)    # kolorowanie dla przewidzianej alt
 
                         else:
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(']'))
-                            #zapis2 += '<td>['+str(plane_dict[pentry][13])+'</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(' ]'))
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                            #zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET)    # kolorowanie dla przewidzianej alt
 
                     else:
                         if (plane_dict[pentry][9] == "RECEDING" or plane_dict[pentry][8] == "LEAVING"):
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLEDARK, str( plane_dict[pentry][13]),RESET, str(']'))
-                            #zapis2 += '<td class="dptext">['+str(plane_dict[pentry][13])+']</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLEDARK, str( plane_dict[pentry][13]),RESET, str(' ]'))
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(altitudeX),RESET, str(']'))    # kolorowanie dla aktualnej alt
-                            #zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(plane_dict[pentry][7]),RESET)    # kolorowanie dla aktualnej alt
 
                         elif (str(plane_dict[pentry][9]) == "APPROACHING"):
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLE, str( plane_dict[pentry][13]),RESET, str(']')) 
-                            #zapis2 += '<td class="ptext">['+str(plane_dict[pentry][13])+']</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLE, str( plane_dict[pentry][13]),RESET, str(' ]')) 
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej altt
-                            #zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET)    # kolorowanie dla przewidzianej altt
 
                         else:
-                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(']'))
-                            #zapis2 += '<td>['+str(plane_dict[pentry][13])+']</td>'
+                            wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(' ]'))
 
-                            wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                            #zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                            wuersz += '{}{}{:>5}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET)    # kolorowanie dla przewidzianej alt
 
-
-                    wuersz += ' |'
-
-
-
-                    # Current altitude in degrees
-                    wuersz += '{} {:>5} {}'.format(alt_col(plane_dict[pentry][7]), str(plane_dict[pentry][7]),RESET)    ## Alt
-                    #zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>'+str(plane_dict[pentry][7])+'</td>'
-
-
-                    # x/!/o latest msg age in pictograms :S (msg type 3 with position ())
-                    if diff_seconds >= 999:
-                        wuersz += '{}'.format(RED+str("x") +RESET)    
-                        #zapis2 += '<td class="rtext">'+str("x")+'</td>'
-                    elif diff_seconds > 30:
-                        wuersz += '{}'.format(RED+str("!") +RESET)    
-                        #zapis2 += '<td class="rtext">'+str("!")+'</td>'
-                    elif diff_seconds > 15:
-                        wuersz += '{}'.format(YELLOW+ str("!")+ RESET)    
-                        #zapis2 += '<td class="ytext">'+str("!")+'</td>'
-                    elif diff_seconds > 10:
-                        wuersz += '{}'.format(GREENFG+ str("!")+ RESET)    
-                        #zapis2 += '<td class="gtext">'+str("!")+'</td>'
-                    else:
-                        wuersz += '{}'.format(GREENFG+str("o") +RESET)    
-                        #zapis2 += '<td class="gtext">'+str("o")+'</td>'
-                    
-                    wuersz += '{:>6}'.format(str(plane_dict[pentry][6]))                                                ## Az    
-                    #zapis2 += '<td>'+str(plane_dict[pentry][6])+'</td>'
-                    
-                    wuersz += '{:>6}'.format(str(wind_deg_to_str1(plane_dict[pentry][6])))                                ## news
-                    #zapis2 += '<td>'+str(wind_deg_to_str1(plane_dict[pentry][6]))+'</td>'
-
-                    
+                    wuersz += '{}{:>5}{}{}'.format(RESET, str(plane_dict[pentry][28]),RESET, str(' ]'))
+                    wuersz += '{}{:>10}{}'.format( RESET, str(plane_dict[pentry][29]),RESET)
 
                     wuersz += ' |'
 
@@ -1268,57 +1317,32 @@ def tabela_terminal():
                         separation_deg2 = 90.0
 
                     if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG):
-                        wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td class="ggtext">'+str(plane_dict[pentry][21])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td class="ggtext">'+str(round(plane_dict[pentry][20],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
-                        #zapis2 += '<td class="ggtext">'+str(plane_dict[pentry][22])+'</td>'
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][22])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
                         
                     elif (-transit_separation_REDALERT_FG < separation_deg2 < transit_separation_REDALERT_FG):
-                        wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][21])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][20],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                        #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][22])+'</td>'
-
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][22])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
 
                     elif (-transit_separation_notignored < separation_deg2 < transit_separation_notignored):
-                        wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td>'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td>'+str(plane_dict[pentry][21])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td>'+str(round(plane_dict[pentry][20],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT    
-                        #zapis2 += '<td>'+str(plane_dict[pentry][22])+'</td>'
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][22])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
 
                     else:
                         wuersz += '{:>8}'.format(str("---"))  ## SEPARACJA
-                        #zapis2 += '<td> ---- </td>'
-
-                        wuersz += '{:>8}'.format(str("---"))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS   
-                        #zapis2 += '<td> ---- </td>'
 
                         wuersz += '{:>7}'.format(str("---")) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td> ---- </td>'
 
                         wuersz += '{:>10}'.format(str("---"))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT                        
-                        #zapis2 += '<td> ---- </td>'
 
                     ###tu koniec
 
@@ -1329,56 +1353,32 @@ def tabela_terminal():
                         separation_deg = 90.0
 
                     if (-transit_separation_GREENALERT_FG < separation_deg < transit_separation_GREENALERT_FG):
-                        wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td class="ggtext">+'+str(plane_dict[pentry][27])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td class="ggtext">+'+str(round(plane_dict[pentry][25],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
-                        #zapis2 += '<td class="ggtext">+'+str(plane_dict[pentry][26])+'</td>'
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][26])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
 
                     elif (-transit_separation_REDALERT_FG < separation_deg < transit_separation_REDALERT_FG):
-                        wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][27])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][25],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                        #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][26])+'</td>'
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][26])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
 
                     elif (-transit_separation_notignored < separation_deg < transit_separation_notignored):
-                        wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                        #zapis2 += '<td>'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
-
-                        wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                        #zapis2 += '<td>'+str(plane_dict[pentry][27])+'</td>'
+                        wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),2)),RESET) ## SEPARACJA
 
                         wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td>'+str(round(plane_dict[pentry][25],1))+'</td>'
 
-                        wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT    
-                        #zapis2 += '<td>'+str(plane_dict[pentry][26])+'</td>'
+                        wuersz += '{:>10}'.format(str(sekundy2minsec(plane_dict[pentry][26])))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
 
                     else:
                         wuersz += '{:>8}'.format(str("---"))  ## SEPARACJA
-                        #zapis2 += '<td> ---- </td>'
-
-                        wuersz += '{:>8}'.format(str("---"))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS   
-                        #zapis2 += '<td> ---- </td>'
 
                         wuersz += '{:>7}'.format(str("---")) ## DISTANCE MY_POS TO CROSS POINT
-                        #zapis2 += '<td> ---- </td>'
 
                         wuersz += '{:>10}'.format(str("---"))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                        #zapis2 += '<td> ---- </td>'
 
                     ##tu koniec2    
                     wuersz += ' |'
@@ -1388,7 +1388,6 @@ def tabela_terminal():
                     diff_secx = (nowx - thenx).total_seconds()
 
                     wuersz += '{:>6}'.format(str(round(diff_secx, 1)))
-                    #zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>'
 
                     wuersz += ' |'
                     if plane_dict[pentry][17] != "":
@@ -1397,10 +1396,8 @@ def tabela_terminal():
                         diff_secx1 = (nowx1 - thenx1).total_seconds()
 
                         wuersz += '{:>6}'.format(str(round(diff_secx1, 1)))
-                        #zapis2 += '<td>'+str(round(diff_secx1, 1))+'</td>'
                     else:
                         wuersz += '{:>6}'.format(str('------'))
-                        #zapis2 += '<td>-----</td>'
 
                     #print( wiersz)
                     #rint('8', plane_dict[pentry][8],'9',plane_dict[pentry][9],'12',plane_dict[pentry][12],plane_dict[pentry][5],plane_dict[pentry][10] )
@@ -1453,12 +1450,10 @@ def tabela_terminal():
                 if plane_dict[pentry][1] != "":
                     wuersz = ''
                     wuersz += '{} {:7} {}'.format(YELLOW, str(plane_dict[pentry][1]), RESET)   ##flight
-                    #zapis2 +=  '<tr><td class="ytext">'+str(plane_dict[pentry][1])+'</td>'                                                 ##flight
 
                 else:
                     wuersz = ''
                     wuersz += '{} {:7} {}'.format(RESET, str(pentry),RESET)                    ##icao
-                    #zapis2 +=  '<tr><td>'+str(pentry)+'</td>'                                                 ##flight
                     
                 if plane_dict[pentry][4] != "":
                     if is_float_try(plane_dict[pentry][4]):
@@ -1466,83 +1461,60 @@ def tabela_terminal():
                     else:
                         elevation=9999
                     wuersz += '{} {:>6} {}'.format(elev_col(elevation), str(elevation),RESET)     ##elev
-                    #zapis2 += '<td>'+str(elevation)+'</td>'
                     
                 else:
                     wuersz += '{} {:>6} {}'.format(RESET,str('---'),RESET)                         ##elev
-                    #zapis2 += '<td>---</td>'
 
                 if plane_dict[pentry][11] != "":
                     wuersz += '{:>5}'.format(str(plane_dict[pentry][11]))                          ##track
-                    #zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>'
 
                 else:
                     wuersz += '{:>5}'.format(str('---'))
-                    #zapis2 += '<td>---</td>'
                     
                 wuersz += '  |'
                 if plane_dict[pentry][5] != "":
                     wuersz = ''
                     wuersz += '{} {:>5} {}'.format(RESET, str(plane_dict[pentry][5]), RESET)       ##flight
-                    #zapis2 += '<td>'+plane_dict[pentry][5]+'</td>'
 
                 else:    
                     wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET)    
-                    #zapis2 += '<td>---</td>'
-
-                wuersz += '|'
-
-
-                wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET)                     ## warn
-                #zapis2 += '<td>---</td>'
 
                 wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
-                #zapis2 += '<td>---</td>'
-
-                wuersz += '  |'
-
-                wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
-                #zapis2 += '<td>---</td>'
 
                 if diff_seconds > 5:
                     wuersz += '{}'.format(str("!"))    
-                    #zapis2 += '<td>!</td>'
                 else:
                     wuersz += '{}'.format(str(" "))
-                    #zapis2 += '<td> </td>'
 
                 wuersz += '{:>7}'.format(str('---'))                     ## az1 news
-                #zapis2 += '<td>---</td>'
 
-                ##zapis2 += '<td> ---- </td>'
                 wuersz += '{:>5}'.format(str('---'))                     ## az2
-                #zapis2 += '<td>---</td>'
+
+                wuersz += ' |'
+
+
+                wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET)                     ## warn
+
+                wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
+
+                wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
+                wuersz += '{} {:>8} {}'.format(RESET, str('---'),RESET) ## alt    
+
+                wuersz += '   |'
+
+
+                wuersz += '{} {:>7} {}'.format(RESET, str('---'),RESET)                ## Sep
+
+                wuersz += '{:>6}'.format(str('---')) 
+                
+                wuersz += '{:>10}'.format(str('---')) 
 
                 wuersz += ' |'
                 wuersz += '{} {:>7} {}'.format(RESET, str('---'),RESET)                ## Sep
-                #zapis2 += '<td>---</td>'
 
-                wuersz += '{:>7}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
-                
-                wuersz += '{:>7}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
-                
-                wuersz += '{:>10}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
-
-                wuersz += ' |'
-                wuersz += '{} {:>7} {}'.format(RESET, str('---'),RESET)                ## Sep
-                #zapis2 += '<td>---</td>'
-
-                wuersz += '{:>7}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
-
-                wuersz += '{:>7}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
+                wuersz += '{:>6}'.format(str('---')) 
 
                 wuersz += '{:>10}'.format(str('---')) 
-                #zapis2 += '<td>---</td>'
 
                 wuersz += ' |'
                 thenx = plane_dict[pentry][0]
@@ -1550,12 +1522,10 @@ def tabela_terminal():
                 diff_secx = (nowx - thenx).total_seconds()
                 
                 wuersz += '{:>6}'.format(str(round(diff_secx, 1)))
-                #zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>'
                 
                 wuersz += ' |'
 
                 wuersz += '{:>6}'.format(str(' -----'))
-                #zapis2 += '<td>---</td>'
             
             print( wuersz)
             #zapis2 += '</tr>'
@@ -1593,6 +1563,12 @@ def tabela_html():
     global footer
     global last_t
     global last_sekundy
+    global int_counter_1
+    global int_counter_2
+    global int_counter_3
+    global int_counter_4
+            
+            
     if time_corr_ephem == "1":
         #print("aaa")
         d_t1 = datetime.datetime.utcnow() + datetime.timedelta(minutes=int(minutes_add_ephem))
@@ -1601,8 +1577,46 @@ def tabela_html():
         gatech.date = ephem.now()
     
     # vm for right table slot, vs for left table slot 
-    vs = ephem.Moon(gatech)
-    vm = ephem.Sun(gatech)
+    if sel_obj_A == "Sun":
+        vs = ephem.Sun(gatech)
+        obj_A_str = sols_html
+    elif sel_obj_A == "Moon":
+        vs = ephem.Moon(gatech)
+        obj_A_str = luns_html
+    elif sel_obj_A == "Jupiter":
+        vs = ephem.Jupiter(gatech)
+        obj_A_str = jups_html
+    elif sel_obj_A == "Saturn":
+        vs = ephem.Saturn(gatech)
+        obj_A_str = sats_html
+    elif sel_obj_A == "Mars":
+        vs = ephem.Mars(gatech)
+        obj_A_str = mars_html
+    elif sel_obj_A == "Venus":
+        vs = ephem.Venus(gatech)
+        obj_A_str = vens_html
+
+    if sel_obj_B == "Sun":
+        vm = ephem.Sun(gatech)
+        obj_B_str = sols_html
+    elif sel_obj_B == "Moon":
+        vm = ephem.Moon(gatech)
+        obj_B_str = luns_html
+    elif sel_obj_B == "Jupiter":
+        vm = ephem.Jupiter(gatech)
+        obj_B_str = jups_html
+    elif sel_obj_B == "Saturn":
+        vm = ephem.Saturn(gatech)
+        obj_B_str = sats_html
+    elif sel_obj_B == "Mars":
+        vm = ephem.Mars(gatech)
+        obj_B_str = mars_html
+    elif sel_obj_B == "Venus":
+        vm = ephem.Venus(gatech)
+        obj_B_str = vens_html
+
+    #vs = ephem.Moon(gatech)
+    #vm = ephem.Sun(gatech)
     
     # can be used via star name like this: 
     # vs = ephem.star('Polaris')
@@ -1625,14 +1639,6 @@ def tabela_html():
 
         print('\033c')
 
-        # + " Flight info -----------|-------|Pred. closest   |-- Current Az/Alt ---|--- Transits: "+ str(vs.name) +" " +str(obj_B_az) +" "+ str(obj_B_alt) +'     &  '+ str(vm.name)+" "+ str(obj_A_az)+" "+ str(obj_A_alt)+ '')
-        #print( '{:9} {:>6} {:>6} {} {:>5} {} {:>6} {:>7} {} {:>5} {:>6} {:>5} {} {:>7} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {:>7} {} {:>5}'.format(\
-        #' icao or', ' (m)', '(d)', '|', '(km)', '|', '(km)', '(d)', '|', '(d)', '(d)', '(l)', ' |', '(d)', '(km)', '(km)', '   (s)', '|', '(d)', '(km)', '(km)', '   (s)', ' |', '(s)'))
-        #print( '{:9} {:>6} {:>6} {} {:>5} {} {:>6} {:>7} {} {:>5} {:>6} {:>5} {} {:>7} {:>7} {:>7} {:>8} {} {:>7} {:>7} {:>7} {:>7} {} {:>5}'.format(\
-        #' flight', 'elev', 'trck', '|', 'dist', '|', '[warn]', '[Alt]', '|', 'Alt', 'Azim', 'Azim', ' |', 'Sep', 'p2x', 'h2x', 'time2X', '|', 'Sep', 'p2x', 'h2x', 'time2X', ' |', 'age / latlon'))
-        #print( "------------------------|-------|----------------|---------------------|----------------------------------|----------------------------------|-------|-------")
-        #                         background-color: #403f41;
-
         header_snd='''<html>
                     <head>
                         <meta http-equiv="refresh" content="2">
@@ -1652,6 +1658,7 @@ def tabela_html():
                         <meta http-equiv="refresh" content="2">
                         <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.5)">
                         <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.5)">
+
                     <style>
                         body:not(.nohover) tbody tr:hover {
                          background-color: #403f41;
@@ -1765,36 +1772,75 @@ def tabela_html():
                             function sleep (time) {
                                 return new Promise((resolve) => setTimeout(resolve, time));
                             }
+
                         </script>
+                        <script type='text/javascript' src='https://code.jquery.com/jquery-1.10.1.js'></script>
+
                         </head>
                 <body style="background-color: #000000" >
                 <table>
 
                 <thead>
                 <tr>
-                <td></td><td></td><td></td><td></td>
-                <td class="otext" style="text-align: right;">PREDIC</td><td class="otext">TED</td><td style="text-align: right;">CUR</td><td>R</td><td>ENT</td><td></td>
+                <td>Flight</td>
+                <td>info</td>
+                <td></td>
+                <td style="text-align: right;">CURRE</td>
+                <td>NT</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="otext" style="text-align: right;">PREDIC</td>
+                <td class="otext">TED</td><td></td>
                 
-                <td style="text-align: right;" class="lbtext">Transi</td><td class="lbtext">ts: &#x263d</td><td class="lbtext">'''
-                
-        header += str(obj_B_alt)+'</td><td class="lbtext">'+str(obj_B_az)+'</td><td style="text-align: right;" class="ytext">Transi</td><td class="ytext">ts: &#x2609</td><td class="ytext">'+str(obj_A_alt)+'</td><td class="ytext">'+str(obj_A_az)
+                '''
+        header += '<td></td><td class="lbtext">Tr: '+str(obj_A_str)+'</td><td class="lbtext">'
+        header += str(obj_B_alt)+'</td><td class="lbtext">'+str(obj_B_az)+'</td><td class="ytext">Tr: '+str(obj_B_str)+'</td><td class="ytext">'+str(obj_A_alt)+'</td><td class="ytext">'+str(obj_A_az)
         header += '''</td>
                 
                 <td>LAST</td><td>MSG</td>
                 </tr>
 
-                <tr>
-                <td class="ytext">callsgn</td><td>(m)</td><td>(d)</td><td>Cur(km)</td><td class="otext" style="text-align: right;">CLOSE</td><td class="otext">ST</td><td>Cur</td><td></td><td>(d)</td><td>(l)</td>
-                <td class="lbtext">(d)</td><td class="lbtext">(km)</td><td class="lbtext">(km)</td><td class="lbtext">(s)</td>
-                <td class="ytext">(d)</td><td class="ytext">(km)</td><td class="ytext">(km)</td><td class="ytext">(s)</td>
-                <td>(s)</td><td>lat</td>
-                </tr>
 
                 <tr>
-                <td class="wtext">/icao</td><td>elev</td><td>track</td><td>dist</td><td class="otext">(km)</td><td class="otext">alt(d)</td><td>alt(d)</td><td></td><td>azim</td><td>NWSE</td>
-                <td class="lbtext">sep_m</td><td class="lbtext">p2x</td><td class="lbtext">h2x</td><td class="lbtext">t2x</td>
-                <td class="ytext">sep_s</td><td class="ytext">p2x</td><td class="ytext">h2x</td><td class="ytext">t2x</td>
-                <td>any</td><td>lon</td>
+                
+                <td id="call" title="Callsign if available or icao code"  class="wtext">Callsign</td>
+                
+                <script> 
+                $("#call").click(function(){ 
+                    var name = "aargh";
+                    //var name = $('#call').value();
+                    $.ajax({ 
+                        type: "POST", 
+                        url: "phpy/lo15.php", 
+                        data: {"name": name},
+                        //success: function(output) { alert(name); },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } 
+                    });
+                });
+                </script>
+                
+                <td title="(m) Elevation in meters, may depend on pressure and/or my_elevation. Not exactly FlightLevel" >Elev</td>
+                <td title="(deg) Track aka heading aka course">Track</td>
+                <td title="(km) Current distance to the aircraft in km">Dist</td>
+                <td title="(deg) Current altitude in degrees on which the aircraft is visible">[ Alt</td>
+                <td style="text-align: right;" title="(deg) Current azimuth in degrees on which the aircraft is visible.">Az ]&nbsp;</td>
+                <td title="Current azimuth in letter /compass-like/ direction on which the aircraft is visible.">NWSE</td>
+                <td title="Old data warning. See age columns for time of last msg">?</td>
+                <td title="(km) Predicted closest distance from observer to aircraft in km" class="otext">Dist</td>
+                <td title="(deg) Predicted altitude of the aircraft at closest distance in degrees" class="otext">[ Alt</td>
+                <td style="text-align: right;" title="(deg) Predicted azimuth at which the aircraft will be at closest distance" class="otext">Az ]&nbsp;</td>
+                <td title="Predicted time to closest encounter" class="otext">t2c</td>
+                
+                <td title="(deg) Predicted Separation from celestial object at the time of crossing its azimuth by aircraft" class="lbtext">d2x</td>
+                <td title="(km) Predicted distance to the aircraft at the time of crossing object azimuth" class="lbtext">km2x</td>
+                <td title="Predicted time to crossing azimuth of object by aircraft" class="lbtext">t2x</td>
+                <td title="(deg) Predicted Separation from celestial object at the time of crossing its azimuth by aircraft" class="ytext">d2x</td>
+                
+                <td title="(km) Predicted distance to the aircraft at the time of crossing object azimuth" class="ytext">km2x</td>
+                <td title="Predicted time to crossing azimuth of object by aircraft" class="ytext">t2x</td>
+                <td title="Time from last message from aircraft. (Any)">any</td>
+                <td title="Time from last message from aircraft. (With position)">pos</td>
                 </tr>
                 </thead>
                 
@@ -1811,7 +1857,15 @@ def tabela_html():
         last_sekundy = -1
         with open(out_path,'w') as tsttxtzap:
             tsttxtzap.write('')
-
+        
+        if os.path.isfile('/tmp/AllSkyRadar/highlight'):
+            DataFileNameHL='/tmp/AllSkyRadar/highlight'
+            datafileHL=open(DataFileNameHL, 'r')
+            HL=datafileHL.readlines()
+            datafileHL.close()
+        else:
+            HL=''
+        zapis2a = ''
         for pentry in plane_dict:
             #print( plane_dict[pentry])
             #print('8', plane_dict[pentry][8],'9',plane_dict[pentry][9],'12',plane_dict[pentry][12],plane_dict[pentry][5],plane_dict[pentry][10] )
@@ -1824,42 +1878,62 @@ def tabela_html():
                             diff_seconds = (now - then).total_seconds()
                         else:
                             diff_seconds = 999
-                            
+
                         then1 = plane_dict[pentry][0]
                         now1 = datetime.datetime.now()
                         diff_minutes = (now1 - then1).total_seconds() / 60.0
 
-                        #wuersz = ''
                         zapis2 = ''
-
-                        
 
                         # 1st section
                         if plane_dict[pentry][1] != "":
-                            #wuersz += '{} {:7} {}'.format(YELLOW, str(plane_dict[pentry][1]), RESET)                                                 ##flight
-                            zapis2 +=  '<tr><td class="ytext">'+str(plane_dict[pentry][1])+'</td>'                                                 ##flight
-                            
+                            if str(plane_dict[pentry][1]) == str(HL[0].strip()):
+                                zapis2 += '<tr id="'+str(plane_dict[pentry][1])+'"  style="background-color: #104600">'
+                            else:
+                                zapis2 += '<tr id="'+str(plane_dict[pentry][1])+'" >'
+                            zapis2 +=  '<td class="ytext">'+str(plane_dict[pentry][1])+'</td>\n'                                                 ##flight
+                            zapis2a += '$("#'+str(plane_dict[pentry][1])+'").click(function(){ var name = "'+str(plane_dict[pentry][1])+'"; $.ajax({ type: "POST", url: "phpy/lo15.php", data: {"name": name},  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});\n'
                         else:
-                            #wuersz += '{} {:7} {}'.format(RESET, str(pentry), RESET)                            ##flight
-                            zapis2 +=  '<tr><td>'+str(pentry)+'</td>'                                                 ##flight
-                        
+                            if str(pentry) == str(HL[0].strip()):
+                                zapis2 += '<tr id="'+str(pentry)+'" style="background-color: #104600">'
+                            else:
+                                zapis2 += '<tr id="'+str(pentry)+'">'
+
+                            zapis2 +=  '<td>'+str(pentry)+'</td>\n'                                                 ##flight
+                            zapis2a += '$("#'+str(pentry)+'").click(function(){ var name = "'+str(pentry)+'"; $.ajax({ type: "POST", url: "phpy/lo15.php", data: {"name": name},  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});\n'
+
                         if is_float_try(plane_dict[pentry][4]):
                             elevation=int(plane_dict[pentry][4])
                         else:
                             elevation=9999
 
-                        #wuersz += '{} {:>6} {}'.format(elev_col(elevation), str(elevation),RESET)     ##elev
-                        zapis2 += '<td '+str(elev_col_2(elevation))+'>'+str(elevation)+'</td>'
+                        zapis2 += '<td '+str(elev_col_2(elevation))+'>'+str(elevation)+'</td>\n'
 
-                        #wuersz += '{:>5}'.format(str(plane_dict[pentry][11]))                                                ## trck
-                        zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>'
+                        zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>\n'
 
-                        #wuersz += '  |'
-                        #wuersz += '{} {:>5} {}'.format(dist_col(plane_dict[pentry][5]), str(plane_dict[pentry][5]),RESET)    ## dist
-                        zapis2 += '<td '+dist_col_2(plane_dict[pentry][5])+'>'+str(plane_dict[pentry][5])+'</td>'
+                        zapis2 += '<td '+dist_col_2(plane_dict[pentry][5])+'>'+str(plane_dict[pentry][5])+'</td>\n'
 
-                        #wuersz += '|'
 
+                        # Current altitude in degrees
+                        zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(plane_dict[pentry][7])+str(deg_html)+'</td>\n'
+
+
+
+
+                        zapis2 += '<td style="text-align: right;">'+str(plane_dict[pentry][6])+str(deg_html)+']&nbsp;</td>\n'
+                        zapis2 += '<td style="text-align: right;">'+str(wind_deg_to_str1(plane_dict[pentry][6]))+'</td>\n'
+
+                        # x/!/o latest msg age in pictograms :S (msg type 3 with position ())
+                        if diff_seconds >= 999:
+                            zapis2 += '<td class="rtext">'+str("&nbsp;x&nbsp;")+'</td>\n'
+                        elif diff_seconds > 30:
+                            zapis2 += '<td class="rtext">'+str("&nbsp;!&nbsp;")+'</td>\n'
+                        elif diff_seconds > 15:
+                            zapis2 += '<td class="ytext">'+str("&nbsp;!&nbsp;")+'</td>\n'
+                        elif diff_seconds > 10:
+                            zapis2 += '<td class="gtext">'+str("&nbsp;!&nbsp;")+'</td>\n'
+                        else:
+                            zapis2 += '<td class="gtext">'+str("&nbsp;o&nbsp;")+'</td>\n'
 
                         # Predicted closest altitude in degrees
                         if is_float_try(plane_dict[pentry][13]):
@@ -1877,85 +1951,42 @@ def tabela_html():
                         # Predicted closest dissance in km
                         if (plane_dict[pentry][12] == 'WARNING'):
                             if (plane_dict[pentry][9] == "RECEDING" or plane_dict[pentry][8] == "LEAVING"):
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),RED, str( plane_dict[pentry][13]),RESET, str(']')) 
-                                zapis2 += '<td class="rtext">['+str(plane_dict[pentry][13])+']</td>'
+                                zapis2 += '<td class="rtext">['+str(plane_dict[pentry][13])+']</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(altitudeX),RESET, str(']'))    # kolorowanie dla aktualnej alt
-                                zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
                             elif (str(plane_dict[pentry][9]) == "APPROACHING"):
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),REDALERT, str( plane_dict[pentry][13]),RESET, str(']'))
-                                zapis2 += '<td class="rrtext">['+str(plane_dict[pentry][13])+']</td>'
+                                zapis2 += '<td class="rrtext">['+str(plane_dict[pentry][13])+']</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
                             else:
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(']'))
-                                zapis2 += '<td>['+str(plane_dict[pentry][13])+'</td>'
+                                zapis2 += '<td>['+str(plane_dict[pentry][13])+'</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
                         else:
                             if (plane_dict[pentry][9] == "RECEDING" or plane_dict[pentry][8] == "LEAVING"):
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLEDARK, str( plane_dict[pentry][13]),RESET, str(']'))
-                                zapis2 += '<td class="dptext">['+str(plane_dict[pentry][13])+']</td>'
+                                zapis2 += '<td class="dptext">['+str(plane_dict[pentry][13])+']</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(plane_dict[pentry][7])), str(altitudeX),RESET, str(']'))    # kolorowanie dla aktualnej alt
-                                zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
                             elif (str(plane_dict[pentry][9]) == "APPROACHING"):
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),PURPLE, str( plane_dict[pentry][13]),RESET, str(']')) 
-                                zapis2 += '<td class="ptext">['+str(plane_dict[pentry][13])+']</td>'
+                                zapis2 += '<td class="ptext">['+str(plane_dict[pentry][13])+']</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej altt
-                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
                             else:
-                                #wuersz += '{}{}{:>5}{}{}'.format(str('['),RESET, str( plane_dict[pentry][13]),RESET, str(']'))
-                                zapis2 += '<td>['+str(plane_dict[pentry][13])+']</td>'
+                                zapis2 += '<td>['+str(plane_dict[pentry][13])+']</td>\n'
 
-                                #wuersz += '{}{}{:>5}{}{}'.format(str(' ['), str(alt_col(float(altitudeX))), str(altitudeX),RESET, str(']'))    # kolorowanie dla przewidzianej alt
-                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+']</td>'
+                                zapis2 += '<td '+str(alt_col_2(float(altitudeX)))+'>['+str(altitudeX)+str(deg_html)+'</td>\n'
 
 
-                        #wuersz += ' |'
-
-
-
-                        # Current altitude in degrees
-                        #wuersz += '{} {:>5} {}'.format(alt_col(plane_dict[pentry][7]), str(plane_dict[pentry][7]),RESET)    ## Alt
-                        zapis2 += '<td '+str(alt_col_2(plane_dict[pentry][7]))+'>'+str(plane_dict[pentry][7])+'</td>'
-
-
-                        # x/!/o latest msg age in pictograms :S (msg type 3 with position ())
-                        if diff_seconds >= 999:
-                            #wuersz += '{}'.format(RED+str("x") +RESET)    
-                            zapis2 += '<td class="rtext">'+str("x")+'</td>'
-                        elif diff_seconds > 30:
-                            #wuersz += '{}'.format(RED+str("!") +RESET)    
-                            zapis2 += '<td class="rtext">'+str("!")+'</td>'
-                        elif diff_seconds > 15:
-                            #wuersz += '{}'.format(YELLOW+ str("!")+ RESET)    
-                            zapis2 += '<td class="ytext">'+str("!")+'</td>'
-                        elif diff_seconds > 10:
-                            #wuersz += '{}'.format(GREENFG+ str("!")+ RESET)    
-                            zapis2 += '<td class="gtext">'+str("!")+'</td>'
+                        zapis2 += '<td style="text-align: right;">'+str(plane_dict[pentry][28])+str(deg_html)+']&nbsp;</td>\n'
+                        if str(plane_dict[pentry][29]) == "gone":
+                            zapis2 += '<td class="rtext">'+str(plane_dict[pentry][29])+'</td>\n'
                         else:
-                            #wuersz += '{}'.format(GREENFG+str("o") +RESET)    
-                            zapis2 += '<td class="gtext">'+str("o")+'</td>'
-                        
-                        #wuersz += '{:>6}'.format(str(plane_dict[pentry][6]))                                                ## Az    
-                        zapis2 += '<td>'+str(plane_dict[pentry][6])+'</td>'
-                        
-                        #wuersz += '{:>6}'.format(str(wind_deg_to_str1(plane_dict[pentry][6])))                                ## news
-                        zapis2 += '<td>'+str(wind_deg_to_str1(plane_dict[pentry][6]))+'</td>'
-
-                        
-
-                        #wuersz += ' |'
-
+                            zapis2 += '<td>'+str(plane_dict[pentry][29])+'</td>\n'
 
                         ##thenx = plane_dict[pentry][0]
                         #thenx = plane_dict[pentry][17]
@@ -1968,66 +1999,42 @@ def tabela_html():
                             separation_deg2 = 90.0
 
                         if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG) and (round(plane_dict[pentry][22],1) < 100):
-                            #wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
+                            zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td class="ggtext">'+str(plane_dict[pentry][21])+'</td>'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td class="ggtext">'+str(round(plane_dict[pentry][20],1))+'</td>'
+                            zapis2 += '<td class="ggtext">'+str(round(plane_dict[pentry][20],1))+'</td>\n'
 
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
-                            zapis2 += '<td class="ggtext">'+str(plane_dict[pentry][22])+'</td>'
+                            zapis2 += '<td class="ggtext">'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
                             #print("m",moon_tr_sound, minimum_alt_transits , obj_B_alt, transit_separation_sound_alert, separation_deg2)
                             if (-transit_separation_sound_alert < separation_deg2 < transit_separation_sound_alert):
                                 if (int(moon_tr_sound) == 1) and (int(minimum_alt_transits) < obj_B_alt):
                                     countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
                             #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
-                            
                         elif (-transit_separation_REDALERT_FG < separation_deg2 < transit_separation_REDALERT_FG) and (round(plane_dict[pentry][22],1) < 100):
-                            #wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][21])+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][20],1))+'</td>\n'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][20],1))+'</td>'
-
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                            zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][22])+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
 
                             #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
 
 
                         elif (-transit_separation_notignored < separation_deg2 < transit_separation_notignored):
-                            #wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td>'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+'</td>'
+                            zapis2 += '<td>'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][21]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td>'+str(plane_dict[pentry][21])+'</td>'
+                            zapis2 += '<td>'+str(round(plane_dict[pentry][20],1))+'</td>\n'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][20],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td>'+str(round(plane_dict[pentry][20],1))+'</td>'
-
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][22]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT    
-                            zapis2 += '<td>'+str(plane_dict[pentry][22])+'</td>'
+                            zapis2 += '<td>'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
 
                             #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
 
                         else:
-                            #wuersz += '{:>8}'.format(str("---"))  ## SEPARACJA
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
-                            #wuersz += '{:>8}'.format(str("---"))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS   
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
-                            #wuersz += '{:>7}'.format(str("---")) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td> ---- </td>'
-
-                            #wuersz += '{:>10}'.format(str("---"))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT                        
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
                             #countdown_licznik, footer = countdown_s(plane_dict[pentry][22], countdown_licznik)
 
@@ -2040,65 +2047,41 @@ def tabela_html():
                             separation_deg = 90.0
 
                         if (-transit_separation_GREENALERT_FG < separation_deg < transit_separation_GREENALERT_FG) and (round(plane_dict[pentry][25],1) < 100):
-                            #wuersz += '{} {:>6} {}'.format(GREENALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
+                            zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td class="ggtext">+'+str(plane_dict[pentry][27])+'</td>'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td class="ggtext">+'+str(round(plane_dict[pentry][25],1))+'</td>'
+                            zapis2 += '<td class="ggtext">+'+str(round(plane_dict[pentry][25],1))+'</td>\n'
 
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROS
-                            zapis2 += '<td class="ggtext">+'+str(plane_dict[pentry][26])+'</td>'
+                            zapis2 += '<td class="ggtext">+'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
                             #print("s", sun_tr_sound, minimum_alt_transits,obj_A_alt, transit_separation_sound_alert, separation_deg)
                             if (-transit_separation_sound_alert < separation_deg < transit_separation_sound_alert):
                                 if (int(sun_tr_sound) == 1) and (int(minimum_alt_transits) < obj_A_alt):
                                     countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
                             #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
-                            
                         elif (-transit_separation_REDALERT_FG < separation_deg < transit_separation_REDALERT_FG) and (round(plane_dict[pentry][25],1) < 100):
-                            #wuersz += '{} {:>6} {}'.format(REDALERT, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][27])+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][25],1))+'</td>\n'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][25],1))+'</td>'
-
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                            zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][26])+'</td>'
+                            zapis2 += '<td class="rrtext">'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
 
                             #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
 
                         elif (-transit_separation_notignored < separation_deg < transit_separation_notignored):
-                            #wuersz += '{} {:>6} {}'.format(RED, str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1)),RESET) ## SEPARACJA
-                            zapis2 += '<td>'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+'</td>'
+                            zapis2 += '<td>'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
 
-                            #wuersz += '{:>8}'.format(str(plane_dict[pentry][27]))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS  
-                            zapis2 += '<td>'+str(plane_dict[pentry][27])+'</td>'
+                            zapis2 += '<td>'+str(round(plane_dict[pentry][25],1))+'</td>\n'
 
-                            #wuersz += '{:>7}'.format(str(round(plane_dict[pentry][25],1))) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td>'+str(round(plane_dict[pentry][25],1))+'</td>'
-
-                            #wuersz += '{:>10}'.format(str(plane_dict[pentry][26]))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT    
-                            zapis2 += '<td>'+str(plane_dict[pentry][26])+'</td>'
+                            zapis2 += '<td>'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
 
                             #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
 
                         else:
-                            #wuersz += '{:>8}'.format(str("---"))  ## SEPARACJA
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
-                            #wuersz += '{:>8}'.format(str("---"))  ## DISTANCE: AIRPLANE POS TO AIRPLANE PATH CROSS   
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
-                            #wuersz += '{:>7}'.format(str("---")) ## DISTANCE MY_POS TO CROSS POINT
-                            zapis2 += '<td> ---- </td>'
-
-                            #wuersz += '{:>10}'.format(str("---"))            ## delta_tim    ## TIME UNTIL PLANE ARRIVE AT CROSS POINT
-                            zapis2 += '<td> ---- </td>'
+                            zapis2 += '<td> ---- </td>\n'
 
                         ##tu koniec2    
                         #wuersz += ' |'
@@ -2107,20 +2090,65 @@ def tabela_html():
                         nowx = datetime.datetime.now()
                         diff_secx = (nowx - thenx).total_seconds()
 
-                        #wuersz += '{:>6}'.format(str(round(diff_secx, 1)))
-                        zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>'
+                        zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>\n'
 
-                        #wuersz += ' |'
                         if plane_dict[pentry][17] != "":
                             thenx1 = plane_dict[pentry][17]
                             nowx1 = datetime.datetime.now()
                             diff_secx1 = (nowx1 - thenx1).total_seconds()
 
-                            #wuersz += '{:>6}'.format(str(round(diff_secx1, 1)))
-                            zapis2 += '<td>'+str(round(diff_secx1, 1))+'</td>'
+                            zapis2 += '<td>'+str(round(diff_secx1, 1))+'</td>\n'
                         else:
-                            #wuersz += '{:>6}'.format(str('------'))
-                            zapis2 += '<td>-----</td>'
+                            zapis2 += '<td>-----</td>\n'
+
+                        if (plane_dict[pentry][30] != 0 and plane_dict[pentry][30] != '' and footer == ''):
+                            if int(plane_dict[pentry][30]) == 3:
+
+                                if int(plane_dict[pentry][31]) < 2:
+                                    plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
+                                    # in_range.mp3
+                                    footer += '''<script>var audioElementinrange = new Audio('in_range.mp3');
+                                                audioElementinrange.addEventListener('loadeddata', () => { let duration = audioElementinrange.duration; })
+                                                audioElementinrange.play();</script>'''
+                                    #new_in_range.mpe
+                                    #footer += '''<script>var audioElementnewinrange = new Audio('new_in_range.mp3');
+                                    #            audioElementnewinrange.addEventListener('loadeddata', () => { let duration = audioElementnewinrange.duration; })
+                                    #            audioElementnewinrange.play();</script>'''
+                                    #
+                                else:
+                                    plane_dict[pentry][30] = 0
+                                    plane_dict[pentry][31] = 0
+
+                            elif int(plane_dict[pentry][30]) == 2:
+
+                                if int(plane_dict[pentry][31]) < 2:
+                                    plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
+                                    # incoming.mp3
+                                    footer += '''<script>var audioElementincoming = new Audio('incoming.mp3');
+                                                audioElementincoming.addEventListener('loadeddata', () => { let duration = audioElementincoming.duration; })
+                                                audioElementincoming.play();</script>'''
+
+                                else:
+                                    plane_dict[pentry][31] = 0
+                                    plane_dict[pentry][30] = 0
+
+                            elif int(plane_dict[pentry][30]) == 1:
+                                if int(plane_dict[pentry][31]) < 2:
+                                    plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
+                                    # new_in_range.mpe
+                                    footer += '''<script>var audioElementnewinrange = new Audio('new_in_range.mp3');
+                                                audioElementnewinrange.addEventListener('loadeddata', () => { let duration = audioElementnewinrange.duration; })
+                                                audioElementnewinrange.play();</script>'''
+
+                                    #footer += '''<script>var audioElementincoming = new Audio('incoming.mp3');
+                                    #            audioElementincoming.addEventListener('loadeddata', () => { let duration = audioElementincoming.duration; })
+                                    #            audioElementincoming.play();</script>'''
+
+                                else:
+                                    plane_dict[pentry][30] = 0
+                                    plane_dict[pentry][31] = 0
+
+                        #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][30])+'</td>\n<td>'+str(plane_dict[pentry][31])+'</td>\n'
 
                         #print( wiersz)
                         #rint('8', plane_dict[pentry][8],'9',plane_dict[pentry][9],'12',plane_dict[pentry][12],plane_dict[pentry][5],plane_dict[pentry][10] )
@@ -2158,11 +2186,13 @@ def tabela_html():
                         zapis += '\n'
                         #with open('/tmp/out.txt','a') as tsttxtzap:
                         #    tsttxtzap.write(zapis)
+
+
+                        #print(plane_dict[pentry][30])
+
                         with open(out_path,'a') as tsttxtzap:
                             tsttxtzap.write(zapis)
 
-                        
-                        
                 else:
                     if plane_dict[pentry][17] != "":
                         then = plane_dict[pentry][17]
@@ -2171,114 +2201,89 @@ def tabela_html():
                     else:
                         diff_seconds = 999
                     if plane_dict[pentry][1] != "":
-                        #wuersz = ''
-                        #wuersz += '{} {:7} {}'.format(YELLOW, str(plane_dict[pentry][1]), RESET)   ##flight
-                        zapis2 +=  '<tr><td class="ytext">'+str(plane_dict[pentry][1])+'</td>'                                                 ##flight
+                        if str(plane_dict[pentry][1]) == str(HL[0].strip()):
+                            zapis2 += '<tr id="'+str(plane_dict[pentry][1])+'" style="background-color: #104600">'
+                        else:
+                            zapis2 += '<tr id="'+str(plane_dict[pentry][1])+'"  >'
+
+                        zapis2 +=  '<tdclass="ytext">'+str(plane_dict[pentry][1])+'</td>\n'
+                        zapis2a += '$("#'+str(plane_dict[pentry][1])+'").click(function(){ var name = "'+str(plane_dict[pentry][1])+'"; $.ajax({ type: "POST", url: "phpy/lo15.php", data: {"name": name},  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});\n'
+
 
                     else:
-                        #wuersz = ''
-                        #wuersz += '{} {:7} {}'.format(RESET, str(pentry),RESET)                    ##icao
-                        zapis2 +=  '<tr><td>'+str(pentry)+'</td>'                                                 ##flight
-                        
+                        if str(pentry) == str(HL[0].strip()):
+                            zapis2 += '<tr id="'+str(pentry)+'" style="background-color: #104600">'
+                        else:
+                            zapis2 += '<tr id="'+str(pentry)+'">'
+
+                        zapis2 +=  '<td>'+str(pentry)+'</td>\n'                                                 ##flight
+                        zapis2a += '$("#'+str(pentry)+'").click(function(){ var name = "'+str(pentry)+'"; $.ajax({ type: "POST", url: "phpy/lo15.php", data: {"name": name},  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});\n'
+
                     if plane_dict[pentry][4] != "":
                         if is_float_try(plane_dict[pentry][4]):
                             elevation=int(plane_dict[pentry][4])    
                         else:
                             elevation=9999
-                        #wuersz += '{} {:>6} {}'.format(elev_col(elevation), str(elevation),RESET)     ##elev
-                        zapis2 += '<td>'+str(elevation)+'</td>'
-                        
+                        zapis2 += '<td>'+str(elevation)+'</td>\n'
+
                     else:
-                        #wuersz += '{} {:>6} {}'.format(RESET,str('---'),RESET)                         ##elev
-                        zapis2 += '<td>---</td>'
+                        zapis2 += '<td>---</td>\n'
 
                     if plane_dict[pentry][11] != "":
-                        #wuersz += '{:>5}'.format(str(plane_dict[pentry][11]))                          ##track
-                        zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>'
+                        zapis2 += '<td>'+str(plane_dict[pentry][11])+'</td>\n'
+                    else:
+                        zapis2 += '<td>---</td>\n'
+
+                    if plane_dict[pentry][5] != "":
+                        zapis2 += '<td>'+str(plane_dict[pentry][5])+'</td>\n'
 
                     else:
-                        #wuersz += '{:>5}'.format(str('---'))
-                        zapis2 += '<td>---</td>'
-                        
-                    #wuersz += '  |'
-                    if plane_dict[pentry][5] != "":
-                        #wuersz = ''
-                        #wuersz += '{} {:>5} {}'.format(RESET, str(plane_dict[pentry][5]), RESET)       ##flight
-                        zapis2 += '<td>'+str(plane_dict[pentry][5])+'</td>'
-
-                    else:    
-                        #wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET)    
-                        zapis2 += '<td>---</td>'
-
-                    #wuersz += '|'
+                        zapis2 += '<td>---</td>\n'
 
 
-                    #wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET)                     ## warn
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
-                    zapis2 += '<td>---</td>'
 
-                    #wuersz += '  |'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += '{} {:>5} {}'.format(RESET, str('---'),RESET) ## alt    
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
                     if diff_seconds > 5:
-                        #wuersz += '{}'.format(str("!"))    
-                        zapis2 += '<td>!</td>'
+                        zapis2 += '<td>&nbsp;!&nbsp;</td>\n'
                     else:
-                        #wuersz += '{}'.format(str(" "))
-                        zapis2 += '<td> </td>'
+                        zapis2 += '<td>&nbsp;&nbsp;&nbsp;</td>\n'
 
-                    #wuersz += '{:>7}'.format(str('---'))                     ## az1 news
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #zapis2 += '<td> ---- </td>'
-                    #wuersz += '{:>5}'.format(str('---'))                     ## az2
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += ' |'
-                    #wuersz += '{} {:>7} {}'.format(RESET, str('---'),RESET)                ## Sep
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += '{:>7}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
                     
-                    #wuersz += '{:>7}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
-                    
-                    #wuersz += '{:>10}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += ' |'
-                    #wuersz += '{} {:>7} {}'.format(RESET, str('---'),RESET)                ## Sep
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += '{:>7}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
 
-                    #wuersz += '{:>7}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += '{:>10}'.format(str('---')) 
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
+                    zapis2 += '<td>---</td>\n'
 
-                    #wuersz += ' |'
+                    zapis2 += '<td>---</td>\n'
+
                     thenx = plane_dict[pentry][0]
                     nowx = datetime.datetime.now()
                     diff_secx = (nowx - thenx).total_seconds()
                     
-                    #wuersz += '{:>6}'.format(str(round(diff_secx, 1)))
-                    zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>'
+                    zapis2 += '<td>'+str(round(diff_secx, 1))+'</td>\n'
                     
-                    #wuersz += ' |'
 
-                    #wuersz += '{:>6}'.format(str(' -----'))
-                    zapis2 += '<td>---</td>'
+                    zapis2 += '<td>---</td>\n'
                 
                     #print( wiersz)
-                zapis2 += '</tr>'
+                zapis2 += '</tr>\n'
                 tsttxt.write(str(zapis2))
 
         last_line_tmp = str(print_lastline_html(diff_t))
@@ -2323,7 +2328,9 @@ def tabela_html():
             temp_col='>'+str(dataz[1])+'C'
 
         corearm=round(float(dataz[2])/1000000,0)
-        zapis3 = '</table><table style="background-color: #262626;"><th><td>'+last_line_tmp+'</td><td '+str(temp_col)+'</td><td>'+str(corearm)+'MHz</td><td>Load avg: </td><td '+str(load_col)+'</td></th></table>'
+               #plane_dict[pentry][4]
+
+        zapis3 = '</table>\n<table style="background-color: #262626;"><th><td>'+last_line_tmp+'</td>\n<td '+str(temp_col)+'</td>\n<td>'+str(corearm)+'MHz</td>\n<td>Load avg: </td>\n<td '+str(load_col)+'</td>\n</th></table><script>'+str(zapis2a)+'</script>'+'\n'
 
         #print(last_line_tmp)
         if int(gen_term) == 0:
@@ -2343,6 +2350,9 @@ def tabela_html():
         
         #print("fuuuuuuuuuuuuu",footer)
         footer_snd = str(header_snd)+ str(footer)+'</body></html>'
+
+        #zapis3 += '<script>$("#call").click(function(){ $.ajax({ type: "POST", url: "phpy/lo15.php", data: "",  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});</script>'
+
         footer_caly = str(zapis3) +'</body></html>'
 
         with open(out_path_html,'a') as tsttxt:
@@ -2360,23 +2370,33 @@ def tabela_html():
 ##########################################################################################################################################################
 
 def print_lastline_html(diff_t):
-    lastline='<td>'+str(datetime.datetime.time(datetime.datetime.now()))+'</td>'
-    lastline+= '<td>'+" --- "+'</td>'
-    lastline+= '<td>'+str(len (plane_dict))+'</td>'
-    lastline+= '<td>'+" --- "+'</td>'
-    lastline+= '<td>'+str(int(diff_t))+'</td>'
+    lastline='<td title="Last update time.">'+str(datetime.datetime.time(datetime.datetime.now()))+'</td>\n'
+    lastline+= '<td>'+" --- "+'</td>\n'
+    lastline+= '<td title="Dictionary size.">'+str(len (plane_dict))+'</td>\n'
+    lastline+= '<td>'+" --- "+'</td>\n'
+    lastline+= '<td title="Update frequency in seconds(?) 1 is pretty realtime.">'+str(int(diff_t))+'</td>\n'
     if ignore_pressure == 1:
-        lastline+= '<td class="rtext">'+" = "+str(pressure)+"hPa"+'</td>' #+ str(pressure)+"hPa"
+        if ignore_my_elevation == 1:
+            lastline+= '<td title="Pressure ignored! my_elevation ignored!" class="rtext">'+" === "+'</td>\n' #+ str(pressure)+"hPa"
+        else:
+            lastline+= '<td title="Pressure ignored! my_elevation active" class="ytext">'+" === "+'</td>\n' #+ str(pressure)+"hPa"
     else:
-        lastline+= '<td class="ytext">'+" * "+str(pressure)+"hPa"+'</td>' #+ str(pressure)+"hPa"
-    if (metar_active == 1 and ignore_pressure == 0):
-        lastline+= '<td class="ctext">'+str(pressure)+"hPa"+'</td>'
-    elif (metar_active == 0 and ignore_pressure == 1):
-        lastline+= '<td class="rtext">'+str(pressure)+"hPa"+'</td>'
-    elif (metar_active == 0 and ignore_pressure == 0):
-        lastline+= '<td class="ytext">'+str(pressure)+"hPa"+'</td>'
+        if ignore_my_elevation == 1:
+            lastline+= '<td title="Pressure corrections active but my_elevation ignored!" class="ytext">'+" >>> "+'</td>\n' #+ str(pressure)+"hPa"
+        else:
+            lastline+= '<td title="Pressure corrections active, my_elevation active." class="gtext">'+" >>> "+'</td>\n' #+ str(pressure)+"hPa"
 
-    lastline+= '<td>'+" Started: "+str(started)+'</td>' #+" Ago: "+str(aktual_txx)
+    if (metar_active == 1 and ignore_pressure == 0):
+        lastline+= '<td title="METAR pressure active, pressure corrections active." class="gtext">'+str(pressure)+"hPa"+'</td>\n'
+    elif (metar_active == 0 and ignore_pressure == 1):
+        lastline+= '<td title="METAR inactive and pressure ignored!" class="otext">'+str(pressure)+"hPa"+'</td>\n'
+    elif (metar_active == 0 and ignore_pressure == 0):
+        lastline+= '<td title="METAR inactive standart pressure." class="rtext">'+str(pressure)+"hPa"+'</td>\n'
+    elif (metar_active == 1 and ignore_pressure == 1):
+        lastline+= '<td title="Pressure from METAR but pressure ignored!" class="otext">!'+str(pressure)+"hPa"+'</td>\n'
+
+    lastline+= '<td title="Script started at:">'+" Started: "+str(started)+'</td>\n' #+" Ago: "+str(aktual_txx)
+    
     return lastline
 
 
@@ -2387,21 +2407,31 @@ def print_lastline(diff_t):
     lastline+= " --- "
     lastline+= str(int(diff_t))
     if ignore_pressure == 1:
-        lastline+= " --- "+RED+" = " + str(pressure)+RESET+"hPa"
+        if ignore_my_elevation == 1:
+            lastline+= " --- "+RED+" === " #+ str(pressure)+RESET+"hPa"
+        else:
+            lastline+= " --- "+YELLOW+" === " #+ str(pressure)+RESET+"hPa"
     else:
-        lastline+= " --- "+YELLOW+" * "+ str(pressure)+RESET +"hPa"
+        if ignore_my_elevation == 1:
+            lastline+= " --- "+YELLOW+" >>> " #+ str(pressure)+RESET +"hPa"
+        else:
+            lastline+= " --- "+GREEN+" >>> " #+ str(pressure)+RESET +"hPa"
+
     if (metar_active == 1 and ignore_pressure == 0):
-        lastline+= CYAN+str(pressure)+RESET+"hPa"+RESET
+        lastline+= GREEN+str(pressure)+RESET+"hPa"+RESET
     elif (metar_active == 0 and ignore_pressure == 1):
         lastline+= RED+str(pressure)+RESET+"hPa"+RESET
     elif (metar_active == 0 and ignore_pressure == 0):
-        lastline+= YELLOW+str(pressure)+RESET+"hPa"
+        lastline+= RED+str(pressure)+RESET+"hPa"
+    elif (metar_active == 1 and ignore_pressure == 1):
+        lastline+= RED+"!"+str(pressure)+RESET+"hPa"
 
     lastline+= " Started: "+str(started)#+" Ago: "+str(aktual_txx)
     return lastline
 
 
  # startowy przebieg bez danych, html tez tu ma byc? Chyba tylko pod vs.alt/az vm.alt/az
+pressure = get_metar_press()
 obj_A_alt, obj_A_az, obj_B_alt, obj_B_az = tabela_html()
 
 #
@@ -2469,7 +2499,7 @@ while True:
             flight = parts[10].strip()
 
             if (icao not in plane_dict): 
-                plane_dict[icao] = [date_time_local, flight, "", "", "", "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", ""]
+                plane_dict[icao] = [date_time_local, flight, "", "", "", "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
             else:
                 plane_dict[icao][0] = date_time_local
                 plane_dict[icao][1] = flight
@@ -2488,7 +2518,7 @@ while True:
                 else:
                     elevation = ""
             if (icao not in plane_dict): 
-                plane_dict[icao] = [date_time_local, flight, "", "", elevation, "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", ""]
+                plane_dict[icao] = [date_time_local, flight, "", "", elevation, "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
             else:
                 plane_dict[icao][4] = elevation 
                 plane_dict[icao][0] = date_time_local
@@ -2506,8 +2536,8 @@ while True:
             else:
                 velocity_kmh = 900
 
-            if (icao not in plane_dict): 
-                plane_dict[icao] = [date_time_local, "", "", "", "", "", "", "", "", "", "", track,  "", "", velocity, [], [], "", "", "", "", "", "", "", "", "", "", "", ""]
+            if (icao not in plane_dict):
+                plane_dict[icao] = [date_time_local, "", "", "", "", "", "", "", "", "", "", track,  "", "", velocity,   [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0,  0]
 
             else:
                 plane_dict[icao][0] = date_time_local
@@ -2542,6 +2572,7 @@ while True:
             except:
                 plane_lon = ''
                 #pass
+            #print(icao, plane_lat, plane_lon,track)
             if not plane_lat == '':
                 if not plane_lon == '':
                     distance = float(round(haversine((my_lat, my_lon), (plane_lat, plane_lon)),1))
@@ -2557,9 +2588,9 @@ while True:
                     if (icao not in plane_dict):
                         if (typemlat == "MLAT"):
                             track = parts[13].strip()
-                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), track, "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", ""]
+                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), track, "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
                         else:
-                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", ""]
+                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), "", "", "", "",    [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
                         plane_dict[icao][15] = []
                         plane_dict[icao][16] = []
                         plane_dict[icao][15].append(azimuth)
@@ -2599,7 +2630,9 @@ while True:
                         if (typemlat == "MLAT"):
                             track = parts[13].strip()
                             plane_dict[icao][11] = track
-
+                        else:
+                            if parts[13].strip() != '':
+                                plane_dict[icao][11] = track
                         plane_dict[icao][0] = date_time_local
                         plane_dict[icao][2] = plane_lat
                         plane_dict[icao][3] = plane_lon
@@ -2648,19 +2681,23 @@ while True:
             # elevation_feet     = int(round(int(round(elevation / 0.3048)/100)))
             velocity           = plane_dict[icao][14]
             xtd               = crosstrack(distance, (180 + azimuth) % 360, track)
-
+            #print(flight, icao, plane_lat, plane_lon, track, distance)
             plane_dict[icao][13] = xtd
 
             if (xtd <= xtd_tst and distance < warning_distance and warning == "" and direction != "RECEDING"):
                 plane_dict[icao][12] = "WARNING"
                 plane_dict[icao][13] = xtd
                 if detected_sound == 1: # not sure, looks like in detection zone without earlier warning
+                    #plane_dict[icao][30] = 1
+                    # new_in_range.mp3
                     gong()
 
             if (xtd > xtd_tst and distance < warning_distance and warning == "WARNING" and direction != "RECEDING"):
                 plane_dict[icao][12] = ""
                 plane_dict[icao][13] = xtd
                 if detected_sound == 1: # pretty sure
+                    # incoming.mp3 ? 
+                    plane_dict[icao][30] = 2
                     gong() 
 
             if (plane_dict[icao][8] == ""):
@@ -2675,6 +2712,8 @@ while True:
             if (plane_dict[icao][5] <= alert_distance and plane_dict[icao][8] != "ENTERING"):
                 plane_dict[icao][8] = "ENTERING"
                 if entering_sound == 1:
+                    # in_range.mp3 ?
+                    plane_dict[icao][30] = 3
                     gong()
 
             #
@@ -2683,6 +2722,111 @@ while True:
             if (plane_dict[icao][5] > alert_distance and plane_dict[icao][8] == "ENTERING"):
                 plane_dict[icao][8] = "LEAVING"
 
+            
+            if direction != "RECEDING":
+                kosa = math.degrees(math.acos(float(xtd)/float(distance)))
+                
+                ####################################################################################################
+                # copypasta start
+                ####################################################################################################
+
+                if 360 > int(azimuth) >= 270:
+                    if (int(azimuth) - int(track)) > 180:
+                        #AZM_case = 'a1'
+                        AZM = int(azimuth) + kosa
+                    else:
+                        AZM = int(azimuth) - kosa
+                        #AZM_case = 'a2'
+                    '''
+                    if 360 > int(azimuth) >= 270:
+                    if int(track) < 180:
+                        if (int(azimuth) - int(track)) < 180:
+                            AZM = int(azimuth) - kosa
+                        else:
+                            AZM = int(azimuth) + kosa
+                    else: # int(track) > 180
+                        if (int(azimuth) - int(track)) > -180:
+                            AZM = int(azimuth) + kosa
+                        else:
+                            AZM = int(azimuth) - kosa
+                    '''
+                elif 270 > int(azimuth) >= 180:
+                    if int(track) > 180:
+                        if (int(azimuth) - int(track)) < 0:
+                            AZM = int(azimuth) + kosa
+                            #AZM_case = 'b1' # ok
+                        else:
+                            AZM = int(azimuth) - kosa
+                            #AZM_case = 'b2'
+                    else: # int(track) < 180
+                        if (int(azimuth) - int(track))  >180:
+                            AZM = int(azimuth) + kosa
+                            #AZM_case = 'b3' # ok
+                        else:
+                            AZM = int(azimuth) - kosa
+                            #AZM_case = 'b4' # ok
+        
+                elif 180 > int(azimuth) >= 90:
+                    if int(track) > 270:
+                        if (int(azimuth) - int(track)) > -180:
+                            AZM = int(azimuth) + kosa
+                            #AZM_case = 'c1'
+                        else:
+                            AZM = int(azimuth) - kosa
+                            #AZM_case = 'c2' # meh1
+                    elif 0 < int(track) < 180:
+                        AZM = int(azimuth) - kosa
+                        #AZM_case = 'c3' #meh1 zmienione na +
+                    else: # <270
+                        #if (int(azimuth) - int(track)) < -180:
+                        #    AZM = int(azimuth) + kosa
+                        #    #AZM_case = 'c3a'
+                        #else:
+                        AZM = int(azimuth) + kosa
+                        #AZM_case = 'c4' #meh1 zmienione na +
+        
+                elif 90 > int(azimuth) >= 0:
+                    if int(track) > 180:
+                        if (int(azimuth) - int(track)) > -180:
+                            AZM = int(azimuth) + kosa
+                            #AZM_case = 'd1'
+                        else:
+                            AZM = int(azimuth) - kosa
+                            #AZM_case = 'd2'
+                    else: # int(track) < 180
+                        if (int(azimuth) - int(track)) > -180:
+                            AZM = int(azimuth) + kosa
+                            #AZM_case = 'd3'
+                        else:
+                            AZM = int(azimuth) - kosa
+                            #AZM_case = 'd4'
+
+                ####################################################################################################
+                ### copypasta z AllSkyRadar - tam licz osobno az do 100% pewnosci potem updejt copypasta ponownie!
+                ####################################################################################################
+
+                dst2AZM = math.sqrt(float(distance)**2 - float(xtd)**2)
+                if not velocity == '':
+                    velocity = int(velocity)
+                    sure_vel='= '
+                else:
+                    velocity = 900 # only used for transit countdown
+                    sure_vel='~ '
+                delta_seconds = (dst2AZM / velocity)*3600
+                delta_minutes = delta_seconds // 60
+                if delta_minutes >= 1:
+                    delta_AZM = '%02dm%02ds' % (delta_minutes, delta_seconds % 60)
+                else:
+                    delta_AZM = '%02s %02ds' % ("  ", delta_seconds % 60)
+                plane_dict[icao][28] = (int(AZM) % 360) # to tylko diff, trzeba przeniesc cale warunkowanie aktualny azi vs track, pfff :/
+                plane_dict[icao][29] = str(delta_AZM)
+            else:
+                #plane_dict[icao][28] = azimuth
+                plane_dict[icao][28] = int(azimuth) # rough round
+                plane_dict[icao][29] = "gone"
+                plane_dict[icao][13] = distance
+                #print()
+                #print(round(kosa,1), delta_AZM)
 
             ## Transit check
             tst_int1 = transit_pred((my_lat, my_lon), (plane_lat, plane_lon), track, velocity, elevation, obj_A_alt, obj_A_az)
@@ -2758,5 +2902,5 @@ while True:
     else:
         if int(gen_term) == 1:
             obj_A_alt, obj_A_az, obj_B_alt, obj_B_az = tabela_terminal()
-    
+
     clean_dict()

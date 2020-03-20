@@ -9,9 +9,7 @@ MISC_FLDR="/home/pi/AllSkyRadar/misc"
 CONF_FLDR="/home/pi/AllSkyRadar/config"
 STORAGE_IP="192.168.3.112"
 STORAGE_FLDR="/home/pi/work/arch/AS/_ASI"
-MY_LAT="52.4451"
-MY_LON="16.9535"
-MY_ALT="90"
+
 
 data_path="/tmp/out.txt"
 

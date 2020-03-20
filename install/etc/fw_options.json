@@ -98,6 +98,13 @@
 "type":"checkbox"
 },
 {
+"name":"ignore_my_elevation",
+"default":"0",
+"description":"",
+"label":"ignore_my_elevation",
+"type":"checkbox"
+},
+{
 "name":"near_airport_code",
 "default":"EPPO",
 "description":"",
@@ -265,25 +272,34 @@
 "label":"by minutes",
 "type":"number"
 },
-
 {
-"name":"typeaaa",
-"default":"1",
-"description":"Choose between Color (RGB24) or Grayscale (RAW8, RAW16). 16 bits only works with PNG extension",
-"label":"Example selector",
+"name":"sel_obj_A",
+"default":"Moon",
+"description":"Choose Celestial object A for transit calculation",
+"label":"Celestial obj A",
 "type":"select",
 "options": [
-	{"value": "0", "label": "RAW8"},
-	{"value": "1", "label": "RGB24"},
-	{"value": "2", "label": "RAW16"}
+	{"value": "Sun", "label": "Sun"},
+	{"value": "Moon", "label": "Moon"},
+	{"value": "Jupiter", "label": "Jupiter"},
+	{"value": "Saturn", "label": "Saturn"},
+	{"value": "Mars", "label": "Mars"},
+	{"value": "Venus", "label": "Venus"}
 ]
 },
-
 {
-"name":"fontcoloraaaa",
-"default":"255 255 255",
-"description":"BGR value of text color. 0 to 255 for each channel",
-"label":"Example Font Color",
-"type":"text"
+"name":"sel_obj_B",
+"default":"Sun",
+"description":"Choose Celestial object B for transit calculation",
+"label":"Celestial obj B",
+"type":"select",
+"options": [
+	{"value": "Sun", "label": "Sun"},
+	{"value": "Moon", "label": "Moon"},
+	{"value": "Jupiter", "label": "Jupiter"},
+	{"value": "Saturn", "label": "Saturn"},
+	{"value": "Mars", "label": "Mars"},
+	{"value": "Venus", "label": "Venus"}
+]
 }
 ]

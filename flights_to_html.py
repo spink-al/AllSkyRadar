@@ -6,11 +6,14 @@
 Original idea: https://github.com/darethehair/flight-warning
 =======================================================================
 flight_warning.py
-v3.20200314 (web)
+v3.20200320 (web)
 
 =======================================================================
 Changes:
 =======================================================================
+v3.20200320 (web)
+- interactive html table - higlighted flight in table will be highlighted in allskyradar/dummy
+
 v3.20200314 (web)
 - json conf (same folder atm, ready for gui configuration panel)
 - countdown js corrections

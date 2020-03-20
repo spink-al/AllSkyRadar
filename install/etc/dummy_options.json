@@ -47,7 +47,7 @@
 },
 {
 "name":"delay_between_captures",
-"default":"10",
+"default":"5",
 "description":"",
 "label":"delay_between_captures",
 "type":"number"

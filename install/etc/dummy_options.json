@@ -74,6 +74,13 @@
 "type":"checkbox"
 },
 {
+"name":"sunmoontrails",
+"default":"1",
+"description":"",
+"label":"sunmoontrails",
+"type":"checkbox"
+},
+{
 "name":"stars_ovrl",
 "default":"1",
 "description":"",

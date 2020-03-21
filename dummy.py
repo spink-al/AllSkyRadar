@@ -72,6 +72,7 @@ plot_adj_t       = DUMMY_CONF['plot_adj_t']
 
 landmarks_ovrl = DUMMY_CONF['landmarks_ovrl']
 iss_ovrl = DUMMY_CONF['iss_ovrl']
+sunmoontrails = DUMMY_CONF['sunmoontrails']
 #calibration1_ovrl = DUMMY_CONF['calibration1_ovrl']
 #calibration2_ovrl = DUMMY_CONF['calibration2_ovrl']
 plot_trails = DUMMY_CONF['plot_trails']
@@ -283,7 +284,71 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         fontb = {'color':  white_1, 'size': 16, 'weight': 'bold', 'family': 'monospace', }
         font_c = {'color':  white_1, 'size': 16, 'weight': 'bold', 'family': 'monospace', }
 
-        ax.plot(vs.az,90-(round(math.degrees(vs.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=white_1, alpha=1)
+        ax.plot(vs.az,89,'.',markersize=3, markerfacecolor='none', markeredgecolor='yellow', alpha=1)
+        ax.plot(vm.az,89,'.',markersize=3, markerfacecolor='none', markeredgecolor='lightblue', alpha=1)
+        #################################################
+        if int(sunmoontrails) == 1:
+            sun_azis=[]
+            sun_elevis=[]
+            sun_PREDICT_1=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600,630,660,690,720]#,750,780,810,840,870,900,930,960,990,1020,1050,1080]
+            for i in sun_PREDICT_1:
+                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(minutes=i) #+ datetime.timedelta(minutes=470)
+                gatech.date = ephem.Date(d_t1)
+                vs.compute(gatech)
+                sun_azis.append(vs.az)
+                sun_elevis.append(90-(round(math.degrees(vs.alt),1)))
+                #print sun.az,round(math.degrees(sun.alt),1)
+
+                if math.degrees(vs.alt) > 0:
+                    delta_sun_s = i*60
+                    delta_sun_m = delta_sun_s // 60
+                    delta_sun_h = delta_sun_m // 60
+                    delta_sun = "%02dh%02dm" % (delta_sun_h, delta_sun_m % 60)
+                    #delta_sun = "%02dh%02dm%02ds" % (delta_sun_h, delta_sun_m % 60, delta_sun_s % 60)
+                    #delta_sun = '%02dm%02ds' % (delta_sun_m, delta_sun_s % 60)
+                    if math.degrees(vs.alt) < 5:
+                        ax.text(vs.az,90-(round(math.degrees(vs.alt),1)), '  '+str(delta_sun), verticalalignment='bottom', horizontalalignment='left',color='yellow' ,rotation=72, fontdict=fontX__2, alpha=0.7)
+                    ax.plot(vs.az,90-(round(math.degrees(vs.alt),1)),'o',markersize=3, color='yellow', alpha=0.6)
+            ax.plot(sun_azis,sun_elevis,'--',markersize=10, color='yellow', lw=1, alpha=0.4)
+
+
+            gatech.date = ephem.now() #RESET!
+            vs.compute(gatech)
+            #################################################
+            moon_azis=[]
+            moon_elevis=[]
+            moon_PREDICT_1=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600,630,660,690,720]#,750,780,810,840,870,900,930,960,990,1020,1050,1080]
+            for i in moon_PREDICT_1:
+                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(minutes=i) #+ datetime.timedelta(minutes=470)
+                gatech.date = ephem.Date(d_t1)
+                vm.compute(gatech)
+                moon_azis.append(vm.az)
+                moon_elevis.append(90-(round(math.degrees(vm.alt),1)))
+                #print moon.az,round(math.degrees(moon.alt),1)
+
+                if math.degrees(vm.alt) > 0:
+                    delta_moon_s = i*60
+                    delta_moon_m = delta_moon_s // 60
+                    delta_moon_h = delta_moon_m // 60
+                    delta_moon = "%02dh%02dm" % (delta_moon_h, delta_moon_m % 60)
+                    #delta_moon = "%02dh%02dm%02ds" % (delta_moon_h, delta_moon_m % 60, delta_moon_s % 60)
+                    #delta_moon = '%02dm%02ds' % (delta_moon_m, delta_moon_s % 60)
+                    if math.degrees(vm.alt) < 5:
+                        ax.text(vm.az,90-(round(math.degrees(vm.alt),1)), '  '+str(delta_moon), verticalalignment='bottom', horizontalalignment='left',color='lightblue' ,rotation=72, fontdict=fontX__2, alpha=0.7)
+                    ax.plot(vm.az,90-(round(math.degrees(vm.alt),1)),'o',markersize=3, color='lightblue', alpha=0.6)
+            ax.plot(moon_azis,moon_elevis,'--',markersize=10, color='lightblue', lw=1, alpha=0.4)
+
+
+            gatech.date = ephem.now() #RESET!
+            vm.compute(gatech)
+            #################################################
+
+
+
+        ax.plot(vs.az,90-(round(math.degrees(vs.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor='yellow', alpha=1)
+        ax.plot(vs.az,90-(round(math.degrees(vs.alt),1)),'o',markersize=11, markerfacecolor='none', markeredgecolor='#000000', alpha=1)
+
+        #ax.plot(vs.az,90-(round(math.degrees(vs.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=white_1, alpha=1)
         ax.text(vs.az,90-(round(math.degrees(vs.alt),1)), ' '+sols, verticalalignment='bottom', horizontalalignment='left', fontdict=font_c, alpha=0.6)
 
         ax.plot(vm.az,90-(round(math.degrees(vm.alt),1)),'o',markersize=15, markerfacecolor='none', markeredgecolor=white_1, alpha=0.3)
@@ -360,9 +425,11 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             if is_int_try(str(plane_dict[11].strip())):
                 track=float(360-(270-int(str(plane_dict[11].strip()))))
                 track_1=float(360-(270-int(str(plane_dict[11].strip()))))
+                track_td=float(360-(90+int(str(plane_dict[11].strip()))))
                 track_2= int(str(plane_dict[11].strip()))
             else:
                 track = 0
+                track_td = 0
                 track_1 = 0
                 track_2 = 0
             azi=np.radians(float(plane_dict[6].strip()))
@@ -724,17 +791,25 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '11'
                     fontc['size'] = '11'
-                    
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    #   ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '11'
                     fontc['size'] = '11'
-                    
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
 
@@ -742,75 +817,125 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '10'
                     fontc['size'] = '10'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '8'
                     fontc['size'] = '8'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
             elif (distance <= 60) and distance > 40 and (meters >= 5000):
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '10'
                     fontc['size'] = '10'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '8'
                     fontc['size'] = '8'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
             elif (distance <= 40) and distance > 20 and (meters >= 5000):
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '11'
                     fontc['size'] = '11'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '9'
                     fontc['size'] = '9'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
             elif (distance <= 20) and (meters >= 5000):
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '11'
                     fontc['size'] = '11'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '9'
                     fontc['size'] = '9'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
             else:
                 if str(flight) == str(HL[0].strip()):
                     fonta['size'] = '12'
                     fontc['size'] = '12'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
+
                     ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '10'
                     fontc['size'] = '10'
+                    if str(theta_direction) == "1":
+                        ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=0.6)
+                    elif str(theta_direction) == "-1":
+                        ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=0.6)
+
                     ax.plot(azi,elunc,'o',markersize=15, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=0.6)
-                    ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
+                    #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=0.6)
                     ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=alpha_ageB)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
     
@@ -996,7 +1121,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             ax.plot((azis[0:tmp_i+1]),(elevis[0:tmp_i+1]),'-',markersize=10, color=fontb['color'], lw=1, alpha=0.5) # , alpha=(alphis[tmp_i]/2))            
             #print(flight, HL[0].strip())
             if str(flight) == str(HL[0].strip()):
-                print(HL[0])
+                #print(HL[0])
                 ax.plot(azi,elunc,'s',markersize=40, markerfacecolor='none', markeredgecolor='darkgreen',lw=2, alpha=1.0)
 
         ########################################################################################################################################################3

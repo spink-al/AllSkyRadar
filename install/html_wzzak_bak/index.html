@@ -1,46 +1,17 @@
 <html>
 
     <head>
-        <script type="text/javascript">
-            var container1 = document.getElementById('iframe-container1');
-            var iframe2 = document.createElement('iframe');
-            iframe3.src = 'dummy.html';
-            iframe3.style.visibility = 'hidden';
-            container1.appendChild(iframe3);
-            container1.removeChild(container1.getElementsByTagName('iframe')[0]);
-            iframe3.style.visibility = 'visible';
-    
-            var container = document.getElementById('iframe-container');
-            var iframe2 = document.createElement('iframe');
-            iframe2.src = 'out6.html';
-            iframe2.style.visibility = 'hidden';
-            container.appendChild(iframe2);
-            container.removeChild(container.getElementsByTagName('iframe')[0]);
-            iframe2.style.visibility = 'visible';
-	</script>
+
     </head>
 
     <body bgcolor="#000000">
-    <iframe src="out7.html" style="display: none;"></iframe>
 
-    <div id="iframe-container">
-	    <iframe src="out6.html" style="width: 900px; height: 495px; top: 490px; left: 1005px; display: block; position: absolute;z-index:1;" frameborder=0></iframe>
-    </div>
 
-    <div id="iframe2">
-	    <iframe src="out6.html" style="width: 900px; height: 495px; top: 490px; left: 1005px; display: block; position: absolute;z-index:1;" frameborder=0></iframe>
-    </div>
-    
-    <div id="iframe-container1">
-	<iframe src="dummy.html" style="border:0; position: absolute; top:0px; left:0px; overflow:hidden; width:1000px; height:1000px;z-index:1;" frameborder=0></iframe>
-    </div>
+    <iframe src="dummy.html" onload="this.style.visibility='visible';" style="border:0; position: absolute; top:0px; left:0px; overflow:hidden; width:1000px; height:1000px;z-index:1;visibility:hidden" frameborder=0></iframe>
+    <iframe src="out6.html"  onload="this.style.visibility='visible';" style="width: 900px; height: 495px; top: 490px; left: 1005px; display: block; position: absolute;z-index:1;visibility:hidden" frameborder=0 ></iframe>
+    <iframe src="vrs.html"   onload="this.style.visibility='visible';" style="border:0; position: absolute; top:0px; left: 1005px; overflow:hidden; width:900px; height:500px;z-index:1;visibility:hidden" frameborder=0></iframe>
 
-    <div id="iframe3">
-	<iframe src="dummy.html" style="border:0; position: absolute; top:0px; left:0px; overflow:hidden; width:1000px; height:1000px;z-index:1;" frameborder=0></iframe>
-    </div>
-    
-    <iframe src="vrs.html" style="border:0; position: absolute; top:0px; left:1005px; overflow:hidden; width:900px; height:500px;z-index:1;" frameborder=0></iframe>
 
-	
+    <iframe src="out7.html" style="display: none;"></iframe><-->
     </body>
 </html>

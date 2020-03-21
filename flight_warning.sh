@@ -1,4 +1,5 @@
 #!/bin/bash
+near_airport_code="EPPO"
 while true ; do 
     mkdir /tmp/AllSkyRadar
     echo "" > /tmp/AllSkyRadar/highlight

@@ -1658,7 +1658,7 @@ def tabela_html():
 
         header='''<html>
                     <head>
-                        <meta http-equiv="refresh" content="2">
+                        <meta http-equiv="refresh" content="1">
                         <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.5)">
                         <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.5)">
 
@@ -2001,7 +2001,7 @@ def tabela_html():
                         else:
                             separation_deg2 = 90.0
 
-                        if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG) and (round(plane_dict[pentry][22],1) < 100):
+                        if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG):# and (round(plane_dict[pentry][22],1) < 100):
                             zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
 
 
@@ -2013,7 +2013,7 @@ def tabela_html():
                                 if (int(moon_tr_sound) == 1) and (int(minimum_alt_transits) < obj_B_alt):
                                     countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
                             #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
-                        elif (-transit_separation_REDALERT_FG < separation_deg2 < transit_separation_REDALERT_FG) and (round(plane_dict[pentry][22],1) < 100):
+                        elif (-transit_separation_REDALERT_FG < separation_deg2 < transit_separation_REDALERT_FG): # and (round(plane_dict[pentry][22],1) < 100):
                             zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
 
                             zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][20],1))+'</td>\n'
@@ -2049,7 +2049,7 @@ def tabela_html():
                         else:
                             separation_deg = 90.0
 
-                        if (-transit_separation_GREENALERT_FG < separation_deg < transit_separation_GREENALERT_FG) and (round(plane_dict[pentry][25],1) < 100):
+                        if (-transit_separation_GREENALERT_FG < separation_deg < transit_separation_GREENALERT_FG): # and (round(plane_dict[pentry][25],1) < 100):
                             zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
 
 
@@ -2061,7 +2061,7 @@ def tabela_html():
                                 if (int(sun_tr_sound) == 1) and (int(minimum_alt_transits) < obj_A_alt):
                                     countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
                             #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
-                        elif (-transit_separation_REDALERT_FG < separation_deg < transit_separation_REDALERT_FG) and (round(plane_dict[pentry][25],1) < 100):
+                        elif (-transit_separation_REDALERT_FG < separation_deg < transit_separation_REDALERT_FG): # and (round(plane_dict[pentry][25],1) < 100):
                             zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
 
                             zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][25],1))+'</td>\n'

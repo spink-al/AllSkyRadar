@@ -34,3 +34,5 @@ sudo pip3 install scipy
 sudo apt install tmux
 
 sudo apt install screen
+
+sudo apt install netcat

@@ -2209,7 +2209,7 @@ def tabela_html():
                         else:
                             zapis2 += '<tr id="'+str(plane_dict[pentry][1])+'"  >'
 
-                        zapis2 +=  '<tdclass="ytext">'+str(plane_dict[pentry][1])+'</td>\n'
+                        zapis2 +=  '<td class="ytext">'+str(plane_dict[pentry][1])+'</td>\n'
                         zapis2a += '$("#'+str(plane_dict[pentry][1])+'").click(function(){ var name = "'+str(plane_dict[pentry][1])+'"; $.ajax({ type: "POST", url: "phpy/lo15.php", data: {"name": name},  error: function(XMLHttpRequest, textStatus, errorThrown) { alert("Some error occured"); } });});\n'
 
 

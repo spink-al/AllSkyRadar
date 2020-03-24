@@ -1276,7 +1276,7 @@ class AsyncWrite(threading.Thread):
         
         font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf", 15)
         #draw.text((30,5  ),metar.strip(' ')                                                        ,(125,125,125),font=font)
-        draw.text((20,5 ),"AllSkyRadar 3b.20200320 - Dummy"                                                ,(100,100,100),font=font)
+        draw.text((20,5 ),"AllSkyRadar 3b.20200324 - Dummy"                                                ,(100,100,100),font=font)
 
         draw.text((20,25),"tt: "+self.aktual_t_f                           ,(255,255,0),font=font)
 

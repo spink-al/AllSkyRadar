@@ -6,11 +6,15 @@
 Original idea: https://github.com/darethehair/flight-warning
 =======================================================================
 flight_warning.py
-v3.20200320 (web)
+v3.20200324 (web)
 
 =======================================================================
 Changes:
 =======================================================================
+v3.20200324 (web)
+- speechSynthesis in FireFox
+
+
 v3.20200320 (web)
 - interactive html table - higlighted flight in table will be highlighted in allskyradar/dummy
 
@@ -337,7 +341,7 @@ def transit_pred(obs2moon, plane_pos, track, velocity, elevation, obj_alt, obj_a
         dst_h2x = 0.001
     ## tu test wysokosci na metrach nie ft    
     # if elevation < 2166:
-        # my_elevation = 0 ## taka sama wysokoĹ›Ä‡ punktu obserwacji n.p.m jak pas na EPPO
+        # my_elevation = 0 ## taka sama wysokoÄąâ€şĂ„â€ˇ punktu obserwacji n.p.m jak pas na EPPO
     # else:
         # my_elevation = my_elevation_const
     if not is_int_try(elevation):
@@ -612,7 +616,8 @@ def clean_dict():
                 del plane_dict[pentry]
                 break
 
-def countdown_s(sekundy, countdown_licznik):
+
+def countdown_s(object_str, sekundy, countdown_licznik):
     global last_sekundy
     global footer
     #print(sekundy)
@@ -622,215 +627,263 @@ def countdown_s(sekundy, countdown_licznik):
     if is_int_try(sekundy):
         #print("a1")
         sekundy = int(sekundy)
-    #footer = ''
-    #footer += '<script>audioElements.play();sleep(700).then(() => {;audioElements.play();})</script>'
-    #footer += '<script>audioElements.play();sleep(700).then(() => {;audioElement3.play();sleep(700).then(() => {;audioElementmin.play();  })  })</script>'
-    #print(countdown_licznik, last_sekundy )
+
     if sekundy == "0":
         #print("xx1")
         return countdown_licznik, footer
+
     if sekundy == '':
         #print("xx2")
         return countdown_licznik, footer
-    if (countdown_licznik >= 0): 
-     if (last_sekundy == -1) or (last_sekundy > sekundy):
-        print('x')
-        #if sekundy > 186:
-        #    footer = '''<script>var audioElements = new Audio('Sun.mp3');
-        #                        var audioElement3 = new Audio('3.wav');
-        #                        var audioElementmin = new Audio('Minutes.wav');
-        #                        audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-        #                        audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; })
-        #                        audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-        #    footer += 'audioElements.play(); sleep(700).then(() => {; '
-        #    footer += 'audioElement3.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-        #    countdown_licznik += 1
-        #    last_sekundy = sekundy
 
-        if 179 <= sekundy <= 181:
-            footer = '''<script>var audioElementm = new Audio('sun.mp3');
-                                var audioElement3 = new Audio('3.wav');
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; })
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-            footer += 'audioElementm.play(); sleep(700).then(() => {;'
-            footer += 'audioElement3.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 117 <= sekundy <= 123:
-            footer = '''<script>var audioElementm = new Audio('sun.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement2 = new Audio('2.wav');
-                                audioElement2.addEventListener('loadeddata', () => { let duration = audioElement2.duration; })
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement2.play();sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 58 <= sekundy <= 62:
-            footer = '''<script>var audioElementm = new Audio('sun.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement1 = new Audio('1.wav');
-                                audioElement1.addEventListener('loadeddata', () => { let duration = audioElement1.duration; })
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
+    if (countdown_licznik >= 0):
+        if (last_sekundy == -1) or (last_sekundy > sekundy):
+            #if sekundy > 181:
+            #    footer = '''
+            #    <script>
+            #    var u = new SpeechSynthesisUtterance();
+            #    u.lang = 'en-EN';
+            #    u.rate = 1.25;
+            #    u.text = 'Sun '''+str(sekundy2minsec(sekundy))+''' ';
+            #    speechSynthesis.speak(u);
+            #    </script>
+            #    '''
+            #    countdown_licznik += 1
+            #    last_sekundy = sekundy
+            #el
+            if 179 <= sekundy <= 181:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 117 <= sekundy <= 123:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 58 <= sekundy <= 62:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 48 <= sekundy <= 52:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 38 <= sekundy <= 42:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 28 <= sekundy <= 32:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 18 <= sekundy <= 22:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 14 <= sekundy <= 16:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 10 <= sekundy <= 12:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
 
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement1.play();sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 48 <= sekundy <= 52:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                var audioElement50 = new Audio('50.wav');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                audioElement50.addEventListener('loadeddata', () => { let duration = audioElement50.duration; });
-                                '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 0 < sekundy < 1:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 1 <= sekundy < 2:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 2 <= sekundy < 3:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 3 <= sekundy < 4:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 4 <= sekundy < 5:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 5 <= sekundy < 6:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 6 <= sekundy < 7:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 7 <= sekundy < 8:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 8 <= sekundy < 9:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 9 <= sekundy < 10:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            #print(footer)
+        return countdown_licznik, footer
 
-            footer += 'audioElements.play();sleep(700).then(() => {; audioElement50.play(); })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 38 <= sekundy <= 42:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement40 = new Audio('40.wav');
-                                audioElement40.addEventListener('loadeddata', () => { let duration = audioElement40.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement40.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 28 <= sekundy <= 32:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement30 = new Audio('30.wav');
-                                audioElement30.addEventListener('loadeddata', () => { let duration = audioElement30.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement30.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 18 <= sekundy <= 22:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement20 = new Audio('20.wav');
-                                audioElement20.addEventListener('loadeddata', () => { let duration = audioElement20.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement20.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 14 <= sekundy <= 16:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement15 = new Audio('15.wav');
-                                audioElement15.addEventListener('loadeddata', () => { let duration = audioElement15.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement15.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 10 <= sekundy <= 12:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement10 = new Audio('10.wav');
-                                audioElement10.addEventListener('loadeddata', () => { let duration = audioElement10.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement10.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 0 < sekundy < 1:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement0 = new Audio('0.wav');
-                                audioElement0.addEventListener('loadeddata', () => { let duration = audioElement0.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement0.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 1 <= sekundy < 2:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement1 = new Audio('1.wav');
-                                audioElement1.addEventListener('loadeddata', () => { let duration = audioElement1.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement1.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 2 <= sekundy < 3:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement2 = new Audio('2.wav');
-                                audioElement2.addEventListener('loadeddata', () => { let duration = audioElement2.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement2.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 3 <= sekundy < 4:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement3 = new Audio('3.wav');
-                                audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement3.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 4 <= sekundy < 5:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement4 = new Audio('4.wav');
-                                audioElement4.addEventListener('loadeddata', () => { let duration = audioElement4.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement4.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 5 <= sekundy < 6:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement5 = new Audio('5.wav');
-                                audioElement5.addEventListener('loadeddata', () => { let duration = audioElement5.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement5.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 6 <= sekundy < 7:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement6 = new Audio('6.wav');
-                                audioElement6.addEventListener('loadeddata', () => { let duration = audioElement6.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement6.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 7 <= sekundy < 8:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement7 = new Audio('7.wav');
-                                audioElement7.addEventListener('loadeddata', () => { let duration = audioElement7.duration; });'''
-            footer += 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement7.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 8 <= sekundy < 9:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement8 = new Audio('8.wav');
-                                audioElement8.addEventListener('loadeddata', () => { let duration = audioElement8.duration; });'''
-            footer = 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement8.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 9 <= sekundy < 10:
-            footer = '''<script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement9 = new Audio('9.wav');
-                                audioElement9.addEventListener('loadeddata', () => { let duration = audioElement9.duration; });'''
-            footer = 'audioElements.play();sleep(700).then(() => {;'
-            footer += 'audioElement9.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        #print(footer)
-    return countdown_licznik, footer
-
-
-def countdown_m(sekundy, countdown_licznik):
+def countdown_m(object_str, sekundy, countdown_licznik):
     global last_sekundy
     global footer
     #print(sekundy)
@@ -840,262 +893,263 @@ def countdown_m(sekundy, countdown_licznik):
     if is_int_try(sekundy):
         #print("a1")
         sekundy = int(sekundy)
-    #footer = ''
-    #footer += '<script>audioElements.play();sleep(700).then(() => {;audioElements.play();})</script>'
-    
-    #footer += '<script>audioElements.play();sleep(700).then(() => {;audioElement3.play();sleep(700).then(() => {;audioElementmin.play();  })  })</script>'
-    # print(countdown_licznik, last_sekundy )
+
     if sekundy == "0":
         #print("xx1")
         return countdown_licznik, footer
+
     if sekundy == '':
         #print("xx2")
         return countdown_licznik, footer
-    if (countdown_licznik >= 0): 
-     if (last_sekundy == -1) or (last_sekundy > sekundy):
-        print('x1')
-        #if sekundy > 186:
-        #    footer = '<script>audioElementm.play();sleep(700).then(() => {;'
-        #    footer += 'audioElement20.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-        #    countdown_licznik += 1
-        #    last_sekundy = sekundy
-        '''
-                                var audioElement60 = new Audio('60.wav');
-                                var audioElement50 = new Audio('50.wav');
-                                var audioElement40 = new Audio('40.wav');
-                                var audioElement30 = new Audio('30.wav');
-                                var audioElement20 = new Audio('20.wav');
-                                var audioElement15 = new Audio('15.wav');
-                                var audioElement10 = new Audio('10.wav');
-                                var audioElement9 = new Audio('9.wav');
-                                var audioElement8 = new Audio('8.wav');
-                                var audioElement7 = new Audio('7.wav');
-                                var audioElement6 = new Audio('6.wav');
-                                var audioElement5 = new Audio('5.wav');
-                                var audioElement4 = new Audio('4.wav');
-                                var audioElement3 = new Audio('3.wav');
-                                var audioElement2 = new Audio('2.wav');
-                                var audioElement1 = new Audio('1.wav');
-                                var audioElement0 = new Audio('0.wav');
-                                var audioElements = new Audio('sun.mp3');
-                                var audioElementm = new Audio('moon.mp3');
-    
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                audioElement60.addEventListener('loadeddata', () => { let duration = audioElement60.duration; })
-                                audioElement50.addEventListener('loadeddata', () => { let duration = audioElement50.duration; })
-                                audioElement40.addEventListener('loadeddata', () => { let duration = audioElement40.duration; })
-                                audioElement30.addEventListener('loadeddata', () => { let duration = audioElement30.duration; })
-                                audioElement20.addEventListener('loadeddata', () => { let duration = audioElement20.duration; })
-                                audioElement15.addEventListener('loadeddata', () => { let duration = audioElement15.duration; })
-                                audioElement10.addEventListener('loadeddata', () => { let duration = audioElement10.duration; })
-                                audioElement9.addEventListener('loadeddata', () => { let duration = audioElement9.duration; })
-                                audioElement8.addEventListener('loadeddata', () => { let duration = audioElement8.duration; })
-                                audioElement7.addEventListener('loadeddata', () => { let duration = audioElement7.duration; })
-                                audioElement6.addEventListener('loadeddata', () => { let duration = audioElement6.duration; })
-                                audioElement5.addEventListener('loadeddata', () => { let duration = audioElement5.duration; })
-                                audioElement4.addEventListener('loadeddata', () => { let duration = audioElement4.duration; })
-                                audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; })
-                                audioElement2.addEventListener('loadeddata', () => { let duration = audioElement2.duration; })
-                                audioElement1.addEventListener('loadeddata', () => { let duration = audioElement1.duration; })
-                                audioElement0.addEventListener('loadeddata', () => { let duration = audioElement0.duration; })
-            
-            footer = <script>var audioElements = new Audio('sun.mp3');
-                                audioElements.addEventListener('loadeddata', () => { let duration = audioElements.duration; })
-                                var audioElement = new Audio('.wav');
-                                audioElement.addEventListener('loadeddata', () => { let duration = audioElement.duration; })'''
-        
-        #if sekundy > 186:
-        #    footer = '''<script>var audioElementm = new Audio('sun.mp3');
-        #                        audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-        #                        var audioElement3 = new Audio('3.wav');
-        #                        audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; })
-        #                        var audioElementmin = new Audio('Minutes.wav');
-        #                        audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-        #    footer += 'audioElementm.play(); sleep(700).then(() => {;'
-        #    footer += 'audioElement3.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-        #    countdown_licznik += 1
-        #    last_sekundy = sekundy
 
-        
-        if 179 <= sekundy <= 181:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement3 = new Audio('3.wav');
-                                audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; })
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-            footer += 'audioElementm.play(); sleep(700).then(() => {;'
-            footer += 'audioElement3.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 117 <= sekundy <= 123:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement2 = new Audio('2.wav');
-                                audioElement2.addEventListener('loadeddata', () => { let duration = audioElement2.duration; })
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement2.play();sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 58 <= sekundy <= 62:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement1 = new Audio('1.wav');
-                                audioElement1.addEventListener('loadeddata', () => { let duration = audioElement1.duration; })
-                                var audioElementmin = new Audio('Minutes.wav');
-                                audioElementmin.addEventListener('loadeddata', () => { let duration = audioElementmin.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement1.play();sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 48 <= sekundy <= 52:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement50 = new Audio('50.wav');
-                                audioElement50.addEventListener('loadeddata', () => { let duration = audioElement50.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement50.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 38 <= sekundy <= 42:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement40 = new Audio('40.wav');
-                                audioElement40.addEventListener('loadeddata', () => { let duration = audioElement40.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement40.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 28 <= sekundy <= 32:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement30 = new Audio('30.wav');
-                                audioElement30.addEventListener('loadeddata', () => { let duration = audioElement30.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement30.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 18 <= sekundy <= 22:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement20 = new Audio('20.wav');
-                                audioElement20.addEventListener('loadeddata', () => { let duration = audioElement20.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement20.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 14 <= sekundy <= 16:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement15 = new Audio('15.wav');
-                                audioElement15.addEventListener('loadeddata', () => { let duration = audioElement15.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement15.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 10 <= sekundy <= 12:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement10 = new Audio('10.wav');
-                                audioElement10.addEventListener('loadeddata', () => { let duration = audioElement10.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement10.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 0 < sekundy < 1:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement0 = new Audio('0.wav');
-                                audioElement0.addEventListener('loadeddata', () => { let duration = audioElement0.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement0.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 1 <= sekundy < 2:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement1 = new Audio('1.wav');
-                                audioElement1.addEventListener('loadeddata', () => { let duration = audioElement1.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement1.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 2 <= sekundy < 3:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement2 = new Audio('2.wav');
-                                audioElement2.addEventListener('loadeddata', () => { let duration = audioElement2.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement2.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 3 <= sekundy < 4:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement3 = new Audio('3.wav');
-                                audioElement3.addEventListener('loadeddata', () => { let duration = audioElement3.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement3.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 4 <= sekundy < 5:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement4 = new Audio('4.wav');
-                                audioElement4.addEventListener('loadeddata', () => { let duration = audioElement4.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement4.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 5 <= sekundy < 6:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement5 = new Audio('5.wav');
-                                audioElement5.addEventListener('loadeddata', () => { let duration = audioElement5.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement5.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 6 <= sekundy < 7:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement6 = new Audio('6.wav');
-                                audioElement6.addEventListener('loadeddata', () => { let duration = audioElement6.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement6.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 7 <= sekundy < 8:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement7 = new Audio('7.wav');
-                                audioElement7.addEventListener('loadeddata', () => { let duration = audioElement7.duration; });'''
-            footer += 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement7.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 8 <= sekundy < 9:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement8 = new Audio('8.wav');
-                                audioElement8.addEventListener('loadeddata', () => { let duration = audioElement8.duration; });'''
-            footer = 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement8.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        elif 9 <= sekundy < 10:
-            footer = '''<script>var audioElementm = new Audio('moon.mp3');
-                                audioElementm.addEventListener('loadeddata', () => { let duration = audioElementm.duration; })
-                                var audioElement9 = new Audio('9.wav');
-                                audioElement9.addEventListener('loadeddata', () => { let duration = audioElement9.duration; });'''
-            footer = 'audioElementm.play();sleep(700).then(() => {;'
-            footer += 'audioElement9.play();})</script>'
-            countdown_licznik += 1
-            last_sekundy = sekundy
-        #print(footer)
-    return countdown_licznik, footer
+    if (countdown_licznik >= 0):
+        if (last_sekundy == -1) or (last_sekundy > sekundy):
+            #footer = '''
+            #<script>
+            #    var u = new SpeechSynthesisUtterance();
+            #    u.lang = 'en-EN';
+            #    u.rate = 1.25;
+            #    u.text = 'Sun '''+str(sekundy2minsec(sekundy))+''' ';
+            #    speechSynthesis.speak(u);
+            #</script>
+            #'''
+            #    countdown_licznik += 1
+            #    last_sekundy = sekundy
+            #el
+            if 179 <= sekundy <= 181:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 117 <= sekundy <= 123:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 58 <= sekundy <= 62:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 48 <= sekundy <= 52:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 38 <= sekundy <= 42:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 28 <= sekundy <= 32:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 18 <= sekundy <= 22:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 14 <= sekundy <= 16:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 10 <= sekundy <= 12:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 0 < sekundy < 1:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 1 <= sekundy < 2:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 2 <= sekundy < 3:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 3 <= sekundy < 4:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 4 <= sekundy < 5:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 5 <= sekundy < 6:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 6 <= sekundy < 7:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 7 <= sekundy < 8:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 8 <= sekundy < 9:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            elif 9 <= sekundy < 10:
+                footer = '''
+                         <script>
+                             var u = new SpeechSynthesisUtterance();
+                             u.lang = 'en-EN';
+                             u.rate = 1.25;
+                             u.text = ' '''+str(object_str)+' '+str(sekundy2minsec(sekundy))+''' ';
+                             speechSynthesis.speak(u);
+                         </script>
+                         '''
+                countdown_licznik += 1
+                last_sekundy = sekundy
+            #print(footer)
+        return countdown_licznik, footer
+
+
+
 
 
 
@@ -1106,10 +1160,11 @@ def countdown_m(sekundy, countdown_licznik):
 def sekundy2minsec(seconds_in):
     delta_seconds_1 = int(seconds_in)
     delta_minutes_1 = delta_seconds_1 // 60
-    if delta_minutes_1 >= 1:
-        delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
-    else:
-        delta_1 = '%02s %02ds' % ("  ", delta_seconds_1 % 60)
+    delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
+    #if delta_minutes_1 >= 1:
+    #    delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
+    #else:
+    #    delta_1 = '%02s %02ds' % ("  ", delta_seconds_1 % 60)
     
     #delta_1 = '%02dm%02ds' % (delta_minutes_1, delta_seconds_1 % 60)
     return str(delta_1)
@@ -1640,13 +1695,14 @@ def tabela_html():
         last_t = aktual_t
 
 
-        print('\033c')
+        #print('\033c')
 
+        '''                <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.5)">
+                        <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.5)">
+        '''
         header_snd='''<html>
                     <head>
-                        <meta http-equiv="refresh" content="2">
-                        <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.5)">
-                        <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.5)">
+                        <meta http-equiv="refresh" content="3">
                         <script>
                             function sleep (time) {
                                 return new Promise((resolve) => setTimeout(resolve, time));
@@ -1870,6 +1926,7 @@ def tabela_html():
             HL=''
         zapis2a = ''
         for pentry in plane_dict:
+            
             #print( plane_dict[pentry])
             #print('8', plane_dict[pentry][8],'9',plane_dict[pentry][9],'12',plane_dict[pentry][12],plane_dict[pentry][5],plane_dict[pentry][10] )
             zapis2 = ''
@@ -2001,45 +2058,32 @@ def tabela_html():
                         else:
                             separation_deg2 = 90.0
 
-                        if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG):# and (round(plane_dict[pentry][22],1) < 100):
+                        if (-transit_separation_GREENALERT_FG < separation_deg2 < transit_separation_GREENALERT_FG): # and (round(plane_dict[pentry][22],1) < 100):
                             zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
-
-
                             zapis2 += '<td class="ggtext">'+str(round(plane_dict[pentry][20],1))+'</td>\n'
-
                             zapis2 += '<td class="ggtext">'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
                             #print("m",moon_tr_sound, minimum_alt_transits , obj_B_alt, transit_separation_sound_alert, separation_deg2)
                             if (-transit_separation_sound_alert < separation_deg2 < transit_separation_sound_alert):
                                 if (int(moon_tr_sound) == 1) and (int(minimum_alt_transits) < obj_B_alt):
-                                    countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
-                            #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
+                                    countdown_licznik, footer = countdown_m(str(vs.name), plane_dict[pentry][22], countdown_licznik)
+
                         elif (-transit_separation_REDALERT_FG < separation_deg2 < transit_separation_REDALERT_FG): # and (round(plane_dict[pentry][22],1) < 100):
                             zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
-
                             zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][20],1))+'</td>\n'
-
                             zapis2 += '<td class="rrtext">'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
-
-                            #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
-
+                            #countdown_licznik, footer = countdown_m(str(vm.name), plane_dict[pentry][22], countdown_licznik)
 
                         elif (-transit_separation_notignored < separation_deg2 < transit_separation_notignored):
                             zapis2 += '<td>'+str(round((plane_dict[pentry][19]-plane_dict[pentry][18]),1))+str(deg_html)+'</td>\n'
-
                             zapis2 += '<td>'+str(round(plane_dict[pentry][20],1))+'</td>\n'
-
                             zapis2 += '<td>'+str(sekundy2minsec(plane_dict[pentry][22]))+'</td>\n'
-
-                            #countdown_licznik, footer = countdown_m(plane_dict[pentry][22], countdown_licznik)
+                            #countdown_licznik, footer = countdown_m(str(vm.name), plane_dict[pentry][22], countdown_licznik)
 
                         else:
                             zapis2 += '<td> ---- </td>\n'
-
                             zapis2 += '<td> ---- </td>\n'
-
                             zapis2 += '<td> ---- </td>\n'
-
-                            #countdown_licznik, footer = countdown_s(plane_dict[pentry][22], countdown_licznik)
+                            #countdown_licznik, footer = countdown_s(str(vm.name), plane_dict[pentry][22], countdown_licznik)
 
                         ###tu koniec
 
@@ -2051,44 +2095,33 @@ def tabela_html():
 
                         if (-transit_separation_GREENALERT_FG < separation_deg < transit_separation_GREENALERT_FG): # and (round(plane_dict[pentry][25],1) < 100):
                             zapis2 += '<td class="ggtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
-
-
                             zapis2 += '<td class="ggtext">+'+str(round(plane_dict[pentry][25],1))+'</td>\n'
-
                             zapis2 += '<td class="ggtext">+'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
                             #print("s", sun_tr_sound, minimum_alt_transits,obj_A_alt, transit_separation_sound_alert, separation_deg)
                             if (-transit_separation_sound_alert < separation_deg < transit_separation_sound_alert):
                                 if (int(sun_tr_sound) == 1) and (int(minimum_alt_transits) < obj_A_alt):
-                                    countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
-                            #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
+                                    countdown_licznik, footer = countdown_s(str(vm.name), plane_dict[pentry][26], countdown_licznik)
+                            #countdown_licznik, footer = countdown_s(str(vs.name), plane_dict[pentry][26], countdown_licznik)
                         elif (-transit_separation_REDALERT_FG < separation_deg < transit_separation_REDALERT_FG): # and (round(plane_dict[pentry][25],1) < 100):
                             zapis2 += '<td class="rrtext">'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
-
                             zapis2 += '<td class="rrtext">'+str(round(plane_dict[pentry][25],1))+'</td>\n'
-
                             zapis2 += '<td class="rrtext">'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
-
-                            #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
+                            #countdown_licznik, footer = countdown_s(str(vs.name), plane_dict[pentry][26], countdown_licznik)
 
                         elif (-transit_separation_notignored < separation_deg < transit_separation_notignored):
                             zapis2 += '<td>'+str(round((plane_dict[pentry][24]-plane_dict[pentry][23]),1))+str(deg_html)+'</td>\n'
-
                             zapis2 += '<td>'+str(round(plane_dict[pentry][25],1))+'</td>\n'
-
                             zapis2 += '<td>'+str(sekundy2minsec(plane_dict[pentry][26]))+'</td>\n'
-
-                            #countdown_licznik, footer = countdown_s(plane_dict[pentry][26], countdown_licznik)
+                            #countdown_licznik, footer = countdown_s(str(vs.name), plane_dict[pentry][26], countdown_licznik)
 
                         else:
                             zapis2 += '<td> ---- </td>\n'
-
                             zapis2 += '<td> ---- </td>\n'
-
                             zapis2 += '<td> ---- </td>\n'
 
                         ##tu koniec2    
                         #wuersz += ' |'
-
+                        #countdown_licznik, footer = countdown_s(str(vs.name), 25, 0)
                         thenx = plane_dict[pentry][0]
                         nowx = datetime.datetime.now()
                         diff_secx = (nowx - thenx).total_seconds()
@@ -2110,9 +2143,23 @@ def tabela_html():
                                 if int(plane_dict[pentry][31]) < 2:
                                     plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
                                     # in_range.mp3
-                                    footer += '''<script>var audioElementinrange = new Audio('in_range.mp3');
-                                                audioElementinrange.addEventListener('loadeddata', () => { let duration = audioElementinrange.duration; })
-                                                audioElementinrange.play();</script>'''
+                                    #footer += '''<script>var audioElementinrange = new Audio('in_range.mp3');
+                                    #            audioElementinrange.addEventListener('loadeddata', () => { let duration = audioElementinrange.duration; })
+                                    #            audioElementinrange.play();</script>'''
+                                    if str(plane_dict[pentry][1]) == '':
+                                        flight_snd = "no callsign"
+                                    else:
+                                        flight_snd = str(plane_dict[pentry][1])
+                                        #flight_snd = list(str(plane_dict[pentry][1]))
+                                        flight_snd=" ".join(flight_snd)
+                                    footer += '''<script>
+                                                    var u = new SpeechSynthesisUtterance();
+                                                    u.lang = 'en-EN';
+                                                    u.rate = 1.25;
+                                                    u.text = 'entering range '''+str(flight_snd)+' '+str(plane_dict[pentry][29])+''' ';
+                                                    speechSynthesis.speak(u);
+                                                </script>'''
+
                                     #new_in_range.mpe
                                     #footer += '''<script>var audioElementnewinrange = new Audio('new_in_range.mp3');
                                     #            audioElementnewinrange.addEventListener('loadeddata', () => { let duration = audioElementnewinrange.duration; })
@@ -2127,10 +2174,22 @@ def tabela_html():
                                 if int(plane_dict[pentry][31]) < 2:
                                     plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
                                     # incoming.mp3
-                                    footer += '''<script>var audioElementincoming = new Audio('incoming.mp3');
-                                                audioElementincoming.addEventListener('loadeddata', () => { let duration = audioElementincoming.duration; })
-                                                audioElementincoming.play();</script>'''
+                                    #footer += '''<script>var audioElementincoming = new Audio('incoming.mp3');
+                                    #            audioElementincoming.addEventListener('loadeddata', () => { let duration = audioElementincoming.duration; })
+                                    #            audioElementincoming.play();</script>'''
 
+                                    if str(plane_dict[pentry][1]) == '':
+                                        flight_snd = "no callsign"
+                                    else:
+                                        flight_snd = str(plane_dict[pentry][1])
+                                        flight_snd=" ".join(flight_snd)
+                                    footer += '''<script>
+                                                    var u = new SpeechSynthesisUtterance();
+                                                    u.lang = 'en-EN';
+                                                    u.rate = 1.25;
+                                                    u.text = 'incoming '''+str(flight_snd)+' '+str(plane_dict[pentry][29])+''' ';
+                                                    speechSynthesis.speak(u);
+                                                </script>'''
                                 else:
                                     plane_dict[pentry][31] = 0
                                     plane_dict[pentry][30] = 0
@@ -2138,10 +2197,25 @@ def tabela_html():
                             elif int(plane_dict[pentry][30]) == 1:
                                 if int(plane_dict[pentry][31]) < 2:
                                     plane_dict[pentry][31] = int(plane_dict[pentry][31]) + 1
+
                                     # new_in_range.mpe
-                                    footer += '''<script>var audioElementnewinrange = new Audio('new_in_range.mp3');
-                                                audioElementnewinrange.addEventListener('loadeddata', () => { let duration = audioElementnewinrange.duration; })
-                                                audioElementnewinrange.play();</script>'''
+                                    #footer += '''<script>var audioElementnewinrange = new Audio('new_in_range.mp3');
+                                    #            audioElementnewinrange.addEventListener('loadeddata', () => { let duration = audioElementnewinrange.duration; })
+                                    #            audioElementnewinrange.play();</script>'''
+
+                                    if str(plane_dict[pentry][1]) == '':
+                                        flight_snd = "no callsign"
+                                    else:
+                                        flight_snd = str(plane_dict[pentry][1])
+                                        flight_snd=" ".join(flight_snd)
+                                    footer += '''<script>
+                                                    var u = new SpeechSynthesisUtterance();
+                                                    u.lang = 'en-EN';
+                                                    u.rate = 1.25;
+                                                    u.text = 'in range '''+str(flight_snd)+' '+str(plane_dict[pentry][29])+''' ';
+                                                    speechSynthesis.speak(u);
+                                                </script>'''
+
 
                                     #footer += '''<script>var audioElementincoming = new Audio('incoming.mp3');
                                     #            audioElementincoming.addEventListener('loadeddata', () => { let duration = audioElementincoming.duration; })
@@ -2150,7 +2224,14 @@ def tabela_html():
                                 else:
                                     plane_dict[pentry][30] = 0
                                     plane_dict[pentry][31] = 0
-
+                        #flight_snd = str(plane_dict[pentry][1])            
+                        #footer += '''<script>
+                        #                            var u = new SpeechSynthesisUtterance();
+                        #                            u.lang = 'en-EN';
+                        #                            u.rate = 1.25;
+                        #                            u.text = 'incoming '''+str(flight_snd)+' '+str(plane_dict[pentry][29])+''' ';
+                        #                            speechSynthesis.speak(u);
+                        #                        </script>'''
                         #zapis2 += '<td class="rrtext">'+str(plane_dict[pentry][30])+'</td>\n<td>'+str(plane_dict[pentry][31])+'</td>\n'
 
                         #print( wiersz)
@@ -2337,7 +2418,7 @@ def tabela_html():
 
         #print(last_line_tmp)
         if int(gen_term) == 0:
-            print("Only HTML output active!")
+            #print("Only HTML output active!")
             print(str(print_lastline(diff_t)))
 
         #tsttxt.write(str(zapis2))
@@ -2351,6 +2432,24 @@ def tabela_html():
         #footer += 'audioElementm.play(); sleep(700).then(() => {;'
         #footer += 'audioElement3.play(); sleep(700).then(() => {;audioElementmin.play();  }) })</script>'
         
+        #countdown_licznik, footer = countdown_s(vs.name, 120, 1)
+        flight_snd = "no callsign"
+        """
+        footer += '''<script>
+                var u = new SpeechSynthesisUtterance();
+                u.lang = 'en-EN';
+                u.rate = 2;
+                u.text = 'zoom zoom '''+str(flight_snd)+''' ';
+                speechSynthesis.speak(u);
+            </script>'''
+        footer += '''<script>
+                var u = new SpeechSynthesisUtterance();
+                u.lang = 'en-EN';
+                u.rate = 2;
+                u.text = 'plus minus '''+str(flight_snd)+''' ';
+                speechSynthesis.speak(u);
+            </script>'''
+        """
         #print("fuuuuuuuuuuuuu",footer)
         footer_snd = str(header_snd)+ str(footer)+'</body></html>'
 
@@ -2502,7 +2601,7 @@ while True:
             flight = parts[10].strip()
 
             if (icao not in plane_dict): 
-                plane_dict[icao] = [date_time_local, flight, "", "", "", "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
+                plane_dict[icao] = [date_time_local, flight, "", "", "", "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0]
             else:
                 plane_dict[icao][0] = date_time_local
                 plane_dict[icao][1] = flight
@@ -2521,7 +2620,7 @@ while True:
                 else:
                     elevation = ""
             if (icao not in plane_dict): 
-                plane_dict[icao] = [date_time_local, flight, "", "", elevation, "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
+                plane_dict[icao] = [date_time_local, flight, "", "", elevation, "", "", "", "", "", "", "", "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0]
             else:
                 plane_dict[icao][4] = elevation 
                 plane_dict[icao][0] = date_time_local
@@ -2540,7 +2639,7 @@ while True:
                 velocity_kmh = 900
 
             if (icao not in plane_dict):
-                plane_dict[icao] = [date_time_local, "", "", "", "", "", "", "", "", "", "", track,  "", "", velocity,   [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0,  0]
+                plane_dict[icao] = [date_time_local, "", "", "", "", "", "", "", "", "", "", track,  "", "", velocity,   [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0,  0, 0, 0]
 
             else:
                 plane_dict[icao][0] = date_time_local
@@ -2591,9 +2690,9 @@ while True:
                     if (icao not in plane_dict):
                         if (typemlat == "MLAT"):
                             track = parts[13].strip()
-                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), track, "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
+                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), track, "", "", "", [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0]
                         else:
-                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), "", "", "", "",    [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0]
+                            plane_dict[icao] = [date_time_local, "", plane_lat, plane_lon, elevation, float(distance), azimuth, altitude, "", "", float(distance), "", "", "", "",    [], [], "", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0]
                         plane_dict[icao][15] = []
                         plane_dict[icao][16] = []
                         plane_dict[icao][15].append(azimuth)
@@ -2687,6 +2786,24 @@ while True:
             #print(flight, icao, plane_lat, plane_lon, track, distance)
             plane_dict[icao][13] = xtd
 
+            #if (xtd <= xtd_tst and warning == "" and direction != "RECEDING" and direction != "HOLDING"):
+            #    #plane_dict[icao][12] = ""
+            #    #plane_dict[icao][13] = xtd
+            #    if detected_sound == 1: # pretty sure
+            #        # incoming.mp3 ? 
+            #        plane_dict[icao][30] = 2
+            #        gong() 
+
+            if (xtd <= xtd_tst and direction != "RECEDING" and direction != "HOLDING" and flight != ''):
+                #plane_dict[icao][12] = ""
+                #plane_dict[icao][13] = xtd
+                if detected_sound == 1: # pretty sure
+                    # incoming.mp3 ? 
+                    if plane_dict[icao][32] == 0:
+                        plane_dict[icao][30] = 2
+                        gong() 
+                        plane_dict[icao][32] = 1
+
             if (xtd <= xtd_tst and distance < warning_distance and warning == "" and direction != "RECEDING"):
                 plane_dict[icao][12] = "WARNING"
                 plane_dict[icao][13] = xtd
@@ -2694,14 +2811,29 @@ while True:
                     #plane_dict[icao][30] = 1
                     # new_in_range.mp3
                     gong()
-
+            
+            if (distance < xtd_tst and warning == "WARNING" and direction != "RECEDING" and flight != ''):
+                #plane_dict[icao][12] = "WARNING"
+                #plane_dict[icao][13] = xtd
+                if detected_sound == 1: # not sure, looks like in detection zone without earlier warning
+                    if plane_dict[icao][33] == 0:
+                        plane_dict[icao][30] = 1 # IN RANGE??!?!?
+                        plane_dict[icao][33] = 1 
+                        # new_in_range.mp3
+                        gong()
+            
+            
+            
+            
             if (xtd > xtd_tst and distance < warning_distance and warning == "WARNING" and direction != "RECEDING"):
                 plane_dict[icao][12] = ""
                 plane_dict[icao][13] = xtd
                 if detected_sound == 1: # pretty sure
                     # incoming.mp3 ? 
-                    plane_dict[icao][30] = 2
+                    #plane_dict[icao][30] = 2
                     gong() 
+
+
 
             if (plane_dict[icao][8] == ""):
                 plane_dict[icao][8] = "LINKED!"
@@ -2811,16 +2943,16 @@ while True:
                 dst2AZM = math.sqrt(float(distance)**2 - float(xtd)**2)
                 if not velocity == '':
                     velocity = int(velocity)
-                    sure_vel='= '
+                    #sure_vel='= '
                 else:
                     velocity = 900 # only used for transit countdown
-                    sure_vel='~ '
+                    #sure_vel='~ '
                 delta_seconds = (dst2AZM / velocity)*3600
                 delta_minutes = delta_seconds // 60
-                if delta_minutes >= 1:
-                    delta_AZM = '%02dm%02ds' % (delta_minutes, delta_seconds % 60)
-                else:
-                    delta_AZM = '%02s %02ds' % ("  ", delta_seconds % 60)
+                #if delta_minutes >= 1:
+                delta_AZM = '%02dm%02ds' % (delta_minutes, delta_seconds % 60)
+                #else:
+                #    delta_AZM = '%02s %02ds' % ("  ", delta_seconds % 60)
                 plane_dict[icao][28] = (int(AZM) % 360) # to tylko diff, trzeba przeniesc cale warunkowanie aktualny azi vs track, pfff :/
                 plane_dict[icao][29] = str(delta_AZM)
             else:

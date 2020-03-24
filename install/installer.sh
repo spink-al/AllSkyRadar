@@ -12,6 +12,20 @@ sudo cp -R html_wzzak_bak/* /var/www/html/html_wzzak_bak
 sudo chown -R www-data:www-data /etc/raspap/
 sudo chown -R www-data:www-data /var/www/html/
 
+sudo apt update
+#sudo pip3 install opencv-python==3.4.6.27
+#sudo pip3 install opencv-contrib-python==3.4.6.27
+#sudo apt install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
+sudo pip3 install -y matplotlib
+sudo pip3 install -y Pillow
+sudo pip3 install -y ephem
+#sudo pip3 install zwoasi
+#sudo pip3 install scipy
+#sudo apt install tmux
+#sudo apt install screen
+sudo apt install -y netcat
+
+
 sudo apt install -y lighttpd php-cgi
 sudo lighty-enable-mod fastcgi-php
 sudo systemctl force-reload lighttpd.service

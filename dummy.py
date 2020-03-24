@@ -118,7 +118,7 @@ luns = u"\u263d"
 #except ValueError:
 #    print("xxxxxx")
 ''' 
-# nie dziaÄąâ€ša pod python 3
+# nie dziaĂ„Ä…Ă˘â‚¬Ĺˇa pod python 3
 def symlink_force(target, link_name):
     try:
         os.symlink(target, link_name)
@@ -210,7 +210,11 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         else:
             HL=''
 
-
+        #xytext 
+        #ax.plot(0,0,'o',markersize=15, markerfacecolor='none', markeredgecolor='red', alpha=1)
+        #tst_props = dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor='black', alpha=0.3)
+        #ax.text(0,0,' lalalalallala \n lalalallalal ', xytext=(1,1), color='black', bbox=tst_props, alpha=1)
+        
         if int(iss_ovrl) == 1:
             iss=ephem.readtle(issline[0], issline[1], issline[2])
             iss.compute(gatech)
@@ -287,7 +291,36 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
         ax.plot(vs.az,89,'.',markersize=3, markerfacecolor='none', markeredgecolor='yellow', alpha=1)
         ax.plot(vm.az,89,'.',markersize=3, markerfacecolor='none', markeredgecolor='lightblue', alpha=1)
         #################################################
+
         if int(sunmoontrails) == 1:
+            '''
+            wen_azis=[]
+            wen_elevis=[]
+            wen_PREDICT_1=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600,630,660,690,720]#,750,780,810,840,870,900,930,960,990,1020,1050,1080]
+            for i in wen_PREDICT_1:
+                d_t1 = datetime.datetime.utcnow() + datetime.timedelta(minutes=i) #+ datetime.timedelta(minutes=470)
+                gatech.date = ephem.Date(d_t1)
+                vve.compute(gatech)
+                wen_azis.append(vve.az)
+                wen_elevis.append(90-(round(math.degrees(vve.alt),1)))
+                #print wen.az,round(math.degrees(wen.alt),1)
+
+                if math.degrees(vve.alt) > 0:
+                    delta_wen_s = i*60
+                    delta_wen_m = delta_wen_s // 60
+                    delta_wen_h = delta_wen_m // 60
+                    delta_wen = "%02dh%02dm" % (delta_wen_h, delta_wen_m % 60)
+                    #delta_wen = "%02dh%02dm%02ds" % (delta_wen_h, delta_wen_m % 60, delta_wen_s % 60)
+                    #delta_wen = '%02dm%02ds' % (delta_wen_m, delta_wen_s % 60)
+                    if math.degrees(vve.alt) < 50:
+                        ax.text(vve.az,90-(round(math.degrees(vve.alt),1)), '  '+str(round(math.degrees(vve.alt),1))+' '+str(delta_wen), verticalalignment='bottom', horizontalalignment='left',color='pink' ,rotation=72, fontdict=fontX__2, alpha=0.7)
+                    ax.plot(vve.az,90-(round(math.degrees(vve.alt),1)),'o',markersize=3, color='pink', alpha=0.6)
+            ax.plot(wen_azis,wen_elevis,'--',markersize=10, color='pink', lw=1, alpha=0.4)
+
+
+            gatech.date = ephem.now() #RESET!
+            vve.compute(gatech)
+            '''
             sun_azis=[]
             sun_elevis=[]
             sun_PREDICT_1=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600,630,660,690,720]#,750,780,810,840,870,900,930,960,990,1020,1050,1080]
@@ -707,11 +740,11 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             vert_al1=str('top') ; hori_al1=str('left')
 
                     if str(flight) == str(HL[0].strip()):
-                        tst_props = dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor='black', alpha=1.0)
-                        ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=3, alpha=1.0)
-                        ax.plot(  np.radians(AZM ), 90-float(xtd_a),'o',markersize=25, markerfacecolor='none', markeredgecolor='green', alpha=1.)
+                        tst_props = dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor='black', zorder=10, alpha=1.0)
+                        ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=3, zorder=8, alpha=1.0)
+                        ax.plot(  np.radians(AZM ), 90-float(xtd_a),'o',markersize=25, markerfacecolor='none', markeredgecolor='green', zorder=9, alpha=1.)
                         ax.text(  np.radians(AZM ), 90-float(xtd_a), ''+str(flight)+' '+str(sure_vel)+str(delta_AZM)+'\n'+str(xtd_b)+'km '+str(xtd_a)+'/'+str(round(AZM,1))+deg+\
-                        '\n'+str(aaz)+'/'+str(track_2)+deg+" "+str(AZM_case), verticalalignment=vert_al1, horizontalalignment=hori_al1, fontdict=fontc_1, bbox=tst_props, alpha=1.) #
+                        '\n'+str(aaz)+'/'+str(track_2)+deg+" "+str(AZM_case), verticalalignment=vert_al1, horizontalalignment=hori_al1, fontdict=fontc_1, bbox=tst_props, zorder=10, alpha=1.) #
                     else:
                         tst_props = dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor='white', alpha=0.8)
                         ax.plot((azi,  np.radians(AZM )  ), (elunc, 90-float(xtd_a)),'-',markersize=10, color='green', lw=2, alpha=0.4)
@@ -783,7 +816,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             #alpha_age=0.4
             #alpha_ageB=0.4
             if str(flight) == str(HL[0].strip()):
-                tst_props = dict(boxstyle='square,pad=0.2', facecolor=white_2, edgecolor=white_1, alpha=1.0)
+                tst_props = dict(boxstyle='square,pad=0.2', facecolor=white_2, edgecolor=white_1, zorder=9, alpha=1.0)
             else:
                 tst_props = dict(boxstyle='square,pad=0.2', facecolor=white_2, edgecolor=white_2, alpha=0.3)
             #moon_s='aaa'
@@ -796,9 +829,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #   ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center',rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, ' \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '11'
@@ -822,9 +855,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '8'
@@ -847,9 +880,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '8'
@@ -872,9 +905,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '9'
@@ -897,9 +930,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '9'
@@ -922,9 +955,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                     elif str(theta_direction) == "-1":
                         ax.text(azi,elunc, '---    ', verticalalignment='center', horizontalalignment='center',rotation=track_td,fontdict=fontb, alpha=1.0)
 
-                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], alpha=1.0)
+                    ax.plot(azi,elunc,'o',markersize=25, markerfacecolor='none', markeredgecolor=fontb['color'], zorder=10, alpha=1.0)
                     #ax.text(azi,elunc, '    ---', verticalalignment='center', horizontalalignment='center', rotation=track,fontdict=fontb, alpha=1.0)
-                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, alpha=1.0)
+                    ax.text(azi,elunc, ' '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, bbox=tst_props, zorder=9, alpha=1.0)
                     #ax.text(azi,elunc, '  \n '+str(flight)+' \n '+str(meters)+'m'+' \n  '+str(distance)+'km \n '+moon_s+sun_s, verticalalignment=vert_al, horizontalalignment=hori_al, fontdict=fonta, alpha=alpha_age)
                 else:
                     fonta['size'] = '10'
@@ -1028,6 +1061,9 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             v1 = ephem.Jupiter(gatech)
                         elif object1 == 'Saturn':
                             v1 = ephem.Saturn(gatech)
+                        elif object1 == 'Venus':
+                            v1 = ephem.Venus(gatech)
+
                         else:
                             v1 = ephem.star(object1)
                             v1.compute(gatech)
@@ -1062,6 +1098,8 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
                             v2 = ephem.Jupiter(gatech)
                         elif object2 == 'Saturn':
                             v2 = ephem.Saturn(gatech)
+                        elif object2 == 'Venus':
+                            v2 = ephem.Venus(gatech)
                         else:
                             v2 = ephem.star(object2)
                             v2.compute(gatech)
@@ -1122,7 +1160,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
             #print(flight, HL[0].strip())
             if str(flight) == str(HL[0].strip()):
                 #print(HL[0])
-                ax.plot(azi,elunc,'s',markersize=40, markerfacecolor='none', markeredgecolor='darkgreen',lw=2, alpha=1.0)
+                ax.plot(azi,elunc,'s',markersize=40, markerfacecolor='none', markeredgecolor='darkgreen',lw=2, zorder=11, alpha=1.0)
 
         ########################################################################################################################################################3
         #datafile8=open(DataFileName8, 'r')
@@ -1148,7 +1186,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
 
         s, (width, height) = canvas.print_to_buffer()
         foreground = Image.frombytes("RGBA", (width, height), s)#,alpha=1)
-        #return foreground
+        #return foregroundz
         #plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f, x)
         imagCropHD1.paste(foreground, (0, 0), foreground)
 
@@ -1159,6 +1197,7 @@ def plotting_1(imagCropHD1, vs, vm, vju, vsa, vma, vve, aktual_t_f):
 
     #opencvImageHD = Image.fromarray(imagCropHD1)
     imagCropHD1.save(dst_tmp,"JPEG", quality=int(q_resize))
+    #imagCropHD1.save(dst_tmp,"PNG")
     
     im_nameHD = tmpfld+"/ASR.tmp/imageHD_"+aktual_t_f+".jpg"
     dst = tmpfld+'/dummy_1080p.jpg'
@@ -1228,6 +1267,7 @@ class AsyncWrite(threading.Thread):
         #test, test2, crop = tstasi178(im)
         #imagCrop = Image.open('/tmp/AllSkyRadar/zwo_1080p.jpg')
         imagCrop = Image.new('RGB', (1080, 1080), color = str(bg_color))
+        #imagCrop = Image.new('RGBA', (1080, 1080), (0, 0, 0, 1))
         #imagCrop = Image.new('RGB', (2240, 2240), color = '#262626')
         #imagCrop = Image.new('RGB', (1080, 1080), color = '#262626')
         #imagCrop = Image.new('RGB', (1080, 1080), color = '#9fa69b')
@@ -1424,6 +1464,7 @@ def Main():
 
             background = AsyncWrite(aktual_t_f)
             background.start()
+            background.join()
 
             time.sleep(int(delay_between_captures))
 

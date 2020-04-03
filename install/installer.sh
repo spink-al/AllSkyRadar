@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo mkdir /etc/raspap
-sudo mkdir /var/www/html/html_wzzak_bak
+sudo mkdir -p /var/www/html/html_wzzak_bak
 
 
 

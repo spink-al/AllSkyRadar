@@ -24,7 +24,7 @@ sudo pip3 install ephem
 #sudo apt install tmux
 #sudo apt install screen
 sudo apt install -y netcat
-
+sudo apt install -y curl
 
 sudo apt install -y lighttpd php-cgi
 sudo lighty-enable-mod fastcgi-php
